@@ -44,14 +44,6 @@ a {
 .lista:hover {
     background-color: rgb(168, 18, 206);
 }
-
-/* imagen de la ps5*/
-.imagen-ps5 {
-    width: 500px;
-    height: 400px;
-    border-radius: 5px;
-
-}
 .cartel{
     border-radius: 43% 57% 32% 68% / 74% 20% 80% 26%;
     background-color: blueviolet;
@@ -67,12 +59,19 @@ a {
 .card1 {
     background-color: black;
     padding: 15px;
-    width: 30%;
-    height: 30%;
+    width: 25%;
+    height: 25%;
     border-style: double;
     border-color: chartreuse;
 }
+/* imagen de la ps5*/
+.imagen-ps5 {
+    width: 250px;
+    height: 200px;
+    border-radius: 5px;
+    margin-left: 3cm;
 
+}
 
 .descuento {
 
@@ -114,19 +113,20 @@ h3 {
 
     background-color: black;
     padding: 15px;
-    width: 30%;
-    height: 50%;
+    width: 25%;
+    height: 25%;
     border-style: double;
     border-color: chartreuse;
+    
 
 
 
 }
 
 .imagen-ps4 {
-    width: 500px;
-    height: 400px;
-    margin: 0 auto;
+    margin-left: 3cm;
+    width: 250px;
+    height: 200px;
     border-radius: 5px;
 
 }
@@ -134,26 +134,39 @@ h3 {
 
 
 body {
-    background-color: #330033;
+    background-color: #ffffff;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 800 800'%3E%3Cg fill='none' stroke='%23404' stroke-width='1'%3E%3Cpath d='M769 229L1037 260.9M927 880L731 737 520 660 309 538 40 599 295 764 126.5 879.5 40 599-197 493 102 382-31 229 126.5 79.5-69-63'/%3E%3Cpath d='M-31 229L237 261 390 382 603 493 308.5 537.5 101.5 381.5M370 905L295 764'/%3E%3Cpath d='M520 660L578 842 731 737 840 599 603 493 520 660 295 764 309 538 390 382 539 269 769 229 577.5 41.5 370 105 295 -36 126.5 79.5 237 261 102 382 40 599 -69 737 127 880'/%3E%3Cpath d='M520-140L578.5 42.5 731-63M603 493L539 269 237 261 370 105M902 382L539 269M390 382L102 382'/%3E%3Cpath d='M-222 42L126.5 79.5 370 105 539 269 577.5 41.5 927 80 769 229 902 382 603 493 731 737M295-36L577.5 41.5M578 842L295 764M40-201L127 80M102 382L-261 269'/%3E%3C/g%3E%3Cg fill='%23505'%3E%3Ccircle cx='769' cy='229' r='5'/%3E%3Ccircle cx='539' cy='269' r='5'/%3E%3Ccircle cx='603' cy='493' r='5'/%3E%3Ccircle cx='731' cy='737' r='5'/%3E%3Ccircle cx='520' cy='660' r='5'/%3E%3Ccircle cx='309' cy='538' r='5'/%3E%3Ccircle cx='295' cy='764' r='5'/%3E%3Ccircle cx='40' cy='599' r='5'/%3E%3Ccircle cx='102' cy='382' r='5'/%3E%3Ccircle cx='127' cy='80' r='5'/%3E%3Ccircle cx='370' cy='105' r='5'/%3E%3Ccircle cx='578' cy='42' r='5'/%3E%3Ccircle cx='237' cy='261' r='5'/%3E%3Ccircle cx='390' cy='382' r='5'/%3E%3C/g%3E%3C/svg%3E");
-    /*background-image: url(../img/imagen_fondo.jpg);*/
     background-repeat: no-repeat;
     background-size: cover;
+}
+footer{
+    margin-top: 1cm;
 }
 
 
 /*formulario*/
 
 fieldset {
-    display: inline-block;
+    margin-left: 4cm;
+    margin-right: 5cm;
     text-align: center;
-    margin-left: 40%;
     height: 5cm;
     font-family: 'Contrail One', cursive;
+    border: none;
+    font-size: xx-large;
+}
+textarea{
+    font-size: x-large;
+}
+.boton{
+    font-size: x-large;
+    border-radius: 30px;
 }
 
 legend {
     color: aliceblue;
+    font-size: xx-large;
+    text-shadow: 20cm;
 }
 
 label {
@@ -164,6 +177,10 @@ label {
 #cards-flex {
     display: flex;
     flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    
+    
 
 
 }
@@ -185,15 +202,20 @@ label {
 
 /*grid*/
 .grid {
+    border-radius: 43% 57% 32% 68% / 74% 20% 80% 26%;
+    background-color: blueviolet;
     display: grid;
     grid-template-columns: 300px 300px 300px 800px;
     grid-template-rows: 30px 30px 40px 30px;
+    
 }
 
 .item {
-    font-family: 'Courier New', Courier, monospace;
-    color: chartreuse;
+    text-align: center;
+    font-family: 'Contrail One', cursive;
+    color: rgb(0, 0, 0);
     font-size: 25px;
+    
 }
 
 /*GRADINTES*/
@@ -215,6 +237,163 @@ label {
 }
 
 strong {
-    color: chartreuse;
+    color: rgb(0, 0, 0);
     font-size: 40px;
 }
+/* backgrounds */
+.fondo_contacto{
+    border-radius: 43% 57% 32% 68% / 74% 20% 80% 26%;
+    background-color: blueviolet;
+    width: 19.5cm;
+    height: 13.5cm;
+    position: relative;
+    left: 45%;
+}
+.fondo_acerca{
+    border-radius: 43% 57% 32% 68% / 74% 20% 80% 26%;
+    background-color: blueviolet;
+
+
+}
+/* animacion cubos*/
+@keyframes square-animation {
+    0% {
+     left: 0;
+     top: 0;
+    }
+   
+    10.5% {
+     left: 0;
+     top: 0;
+    }
+   
+    12.5% {
+     left: 32px;
+     top: 0;
+    }
+   
+    23% {
+     left: 32px;
+     top: 0;
+    }
+   
+    25% {
+     left: 64px;
+     top: 0;
+    }
+   
+    35.5% {
+     left: 64px;
+     top: 0;
+    }
+   
+    37.5% {
+     left: 64px;
+     top: 32px;
+    }
+   
+    48% {
+     left: 64px;
+     top: 32px;
+    }
+   
+    50% {
+     left: 32px;
+     top: 32px;
+    }
+   
+    60.5% {
+     left: 32px;
+     top: 32px;
+    }
+   
+    62.5% {
+     left: 32px;
+     top: 64px;
+    }
+   
+    73% {
+     left: 32px;
+     top: 64px;
+    }
+   
+    75% {
+     left: 0;
+     top: 64px;
+    }
+   
+    85.5% {
+     left: 0;
+     top: 64px;
+    }
+   
+    87.5% {
+     left: 0;
+     top: 32px;
+    }
+   
+    98% {
+     left: 0;
+     top: 32px;
+    }
+   
+    100% {
+     left: 0;
+     top: 0;
+    }
+   }
+   
+   .loader {
+    position: relative;
+    width: 96px;
+    height: 96px;
+    transform: rotate(45deg);
+   }
+   
+   .loader-square {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 28px;
+    height: 28px;
+    margin-left: 1cm;
+    border-radius: 0px;
+    background: rgb(0, 0, 0);
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    animation: square-animation 10s ease-in-out infinite both;
+   }
+   
+   .loader-square:nth-of-type(0) {
+    animation-delay: 0s;
+   }
+   
+   .loader-square:nth-of-type(1) {
+    animation-delay: -1.4285714286s;
+   }
+   
+   .loader-square:nth-of-type(2) {
+    animation-delay: -2.8571428571s;
+   }
+   
+   .loader-square:nth-of-type(3) {
+    animation-delay: -4.2857142857s;
+   }
+   
+   .loader-square:nth-of-type(4) {
+    animation-delay: -5.7142857143s;
+   }
+   
+   .loader-square:nth-of-type(5) {
+    animation-delay: -7.1428571429s;
+   }
+   
+   .loader-square:nth-of-type(6) {
+    animation-delay: -8.5714285714s;
+   }
+   
+   .loader-square:nth-of-type(7) {
+    animation-delay: -10s;
+   }
+  
