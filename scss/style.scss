@@ -1,0 +1,25 @@
+@import "variables";
+
+@mixin nav-menu {
+    background-color: black;
+    transition: ease 2s;
+    color: chartreuse;
+    text-decoration: none;
+    text-align: center;
+    font-family: 'Kanit', sans-serif;
+    font-size: 30px;
+
+}
+.lista{
+    @include nav-menu;
+}
+h1{
+    @include nav-menu;
+}
+h2{
+    @include nav-menu;
+}
+body{
+    background-color: white;
+    background-image: $imagen-fondo;
+}
