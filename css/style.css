@@ -42,7 +42,7 @@ a {
 }
 
 .lista:hover {
-    background-color: rgb(168, 18, 206);
+    background-color: rgb(0, 0, 0);
 }
 .cartel{
     border-radius: 43% 57% 32% 68% / 74% 20% 80% 26%;

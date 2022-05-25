@@ -23,3 +23,21 @@ body{
     background-color: white;
     background-image: $imagen-fondo;
 }
+
+.menu {
+
+
+    font-size: 30px;
+    display: inline-block;
+    margin-right: 60px;
+    text-align: right;
+    position: relative;
+    top: auto;
+}
+a {
+    color: chartreuse;
+    text-decoration: none;
+    text-align: center;
+    font-family: 'Kanit', sans-serif;
+
+}
