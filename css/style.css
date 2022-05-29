@@ -51,8 +51,8 @@ a {
 .cartel {
   border-radius: 43% 57% 32% 68%/74% 20% 80% 26%;
   background-color: blueviolet;
-  width: 5.5cm;
-  height: 1.5cm;
+  width: 11rem;
+  height: 4rem;
   position: relative;
   left: 45%;
 }
@@ -61,7 +61,6 @@ a {
 .card1 {
   background-color: black;
   padding: 15px;
-  width: 25%;
   height: 25%;
   border-style: double;
   border-color: chartreuse;
@@ -72,7 +71,7 @@ a {
   width: 250px;
   height: 200px;
   border-radius: 5px;
-  margin-left: 3cm;
+  margin-left: 6rem;
 }
 
 .descuento {
@@ -103,14 +102,13 @@ h3 {
 .card2 {
   background-color: black;
   padding: 15px;
-  width: 25%;
   height: 25%;
   border-style: double;
   border-color: chartreuse;
 }
 
 .imagen-ps4 {
-  margin-left: 3cm;
+  margin-left: 6rem;
   width: 250px;
   height: 200px;
   border-radius: 5px;
@@ -124,17 +122,17 @@ body {
 }
 
 footer {
-  margin-top: 1cm;
+  margin-top: 2rem;
   font-family: "Kanit", sans-serif;
   font-size: x-large;
 }
 
 /*formulario*/
 fieldset {
-  margin-left: 4cm;
-  margin-right: 5cm;
+  margin-left: 10rem;
+  margin-right: 10rem;
   text-align: center;
-  height: 5cm;
+  height: 10rem;
   font-family: "Contrail One", cursive;
   border: none;
   font-size: xx-large;
@@ -152,7 +150,7 @@ textarea {
 legend {
   color: aliceblue;
   font-size: xx-large;
-  text-shadow: 20cm;
+  text-shadow: 40rem;
 }
 
 label {
@@ -160,13 +158,19 @@ label {
 }
 
 /* Flex Cards*/
-#cards-flex {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
+@media (min-width: 576px) {
+  #cards-flex {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
 }
-
+@media (min-width: 768px) {
+  #cards-flex {
+    flex-direction: row;
+  }
+}
 .precio {
   color: chartreuse;
   font-family: "Contrail One", cursive;
@@ -207,10 +211,10 @@ strong {
 .fondo_contacto {
   border-radius: 43% 57% 32% 68%/74% 20% 80% 26%;
   background-image: linear-gradient(to right, rgb(44, 39, 39), chartreuse);
-  width: 19.5cm;
-  height: 13.5cm;
+  width: 40rem;
+  height: 35rem;
   position: relative;
-  left: 45%;
+  left: 33%;
 }
 
 .fondo_acerca {
@@ -302,7 +306,7 @@ strong {
   left: 0;
   width: 28px;
   height: 28px;
-  margin-left: 1cm;
+  margin-left: 2rem;
   border-radius: 0px;
   background: rgb(0, 0, 0);
   background-size: cover;
