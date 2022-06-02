@@ -260,13 +260,17 @@ strong {
     font-size: 40px;
 }
 /* backgrounds */
-.fondo_contacto{
-    border-radius: 43% 57% 32% 68% / 74% 20% 80% 26%;
-    background-image: $gradientes;
-    width: 40rem;
-    height: 35rem;
-    position: relative;
-    left: 33%;
+@media (min-width: 576px){
+    .fondo_contacto{
+        border-radius: 43% 57% 32% 68% / 74% 20% 80% 26%;
+        background-image: $gradientes;
+        width: 40rem;
+        height: 35rem;
+        position: relative;
+        left: 33%;
+        max-width: 100%;
+}
+
 }
 .fondo_acerca{
     border-radius: 43% 57% 32% 68% / 74% 20% 80% 26%;
