@@ -2,7 +2,6 @@ let nombreIngresado;
 let emailIngresado;
 let telIngresado;
 let boton = document.getElementById("buttonEnviar");
-
 let inputNombre = document.getElementById("nombre");
 let inputEmail = document.getElementById("email");
 let inputTel = document.getElementById("telefono");
@@ -20,7 +19,10 @@ inputTel.addEventListener("input", () => {
 let miFormulario = document.getElementById("formulario");
 miFormulario.onsubmit = (e) => {
   e.preventDefault();
-  console.log("Formulario enviado exitosamente");
+  let nombreIngresado = localStorage.getItem("nombre");
+  let emailIngresado = localStorage.getItem("email");
+  let telIngresado = localStorage.getItem("tel");
+  alert("Consulta enviada!!");
   console.log(
     "Datos del usuario: " +
       nombreIngresado +
@@ -32,7 +34,7 @@ miFormulario.onsubmit = (e) => {
 };
 
 boton.onclick = () => {
-  alert(
-    "Su consulta fue enviada correctamente!!\n En breve recibira una respuesta."
-  );
+  localStorage.setItem("nombre", nombreIngresado);
+  localStorage.setItem("email", emailIngresado);
+  localStorage.setItem("tel", telIngresado);
 };
