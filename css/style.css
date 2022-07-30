@@ -21,19 +21,18 @@ h5 {
 }
 
 /* clase de la etiqueta "li"*/
-.menu {
-  font-size: 30px;
-  display: inline-block;
-  margin-right: 60px;
-  text-align: right;
-  position: relative;
-  top: auto;
+@media (min-width: 576px) {
+  .menu {
+    font-size: 30px;
+    display: inline-block;
+    margin-right: 60px;
+    text-align: right;
+    top: auto;
+  }
 }
-
 .imagen {
   width: 50px;
   height: 600px;
-  position: relative;
   display: flex;
 }
 
@@ -53,8 +52,7 @@ a {
   background-color: blueviolet;
   width: 11rem;
   height: 4rem;
-  position: relative;
-  left: 45%;
+  margin-left: 45%;
 }
 
 /* box modeling producto ps5*/
@@ -92,10 +90,24 @@ h1, h3 {
 h2 {
   text-align: center;
   font-family: "Contrail One", cursive;
+  font-size: 5rem;
 }
 
 h3 {
   font-size: 40px;
+}
+
+.listaServicios {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 3rem;
+  background-color: rgb(0, 0, 0);
+  color: rgb(240, 240, 240);
+  background: rgba(14, 5, 14, 0.8);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 /* producto ps4 */
@@ -128,35 +140,36 @@ footer {
 }
 
 /*formulario*/
-fieldset {
-  margin-left: 10rem;
-  margin-right: 10rem;
-  text-align: center;
-  height: 10rem;
-  font-family: "Contrail One", cursive;
-  border: none;
-  font-size: xx-large;
-}
+@media (min-width: 576px) {
+  fieldset {
+    margin-left: 10rem;
+    margin-right: 10rem;
+    text-align: center;
+    height: 10rem;
+    font-family: "Contrail One", cursive;
+    border: none;
+    font-size: xx-large;
+  }
 
-textarea {
-  font-size: x-large;
-}
+  textarea {
+    font-size: x-large;
+  }
 
-.boton {
-  font-size: x-large;
-  border-radius: 30px;
-}
+  .boton {
+    font-size: x-large;
+    border-radius: 30px;
+  }
 
-legend {
-  color: aliceblue;
-  font-size: xx-large;
-  text-shadow: 40rem;
-}
+  legend {
+    color: aliceblue;
+    font-size: xx-large;
+    text-shadow: 40rem;
+  }
 
-label {
-  color: aliceblue;
+  label {
+    color: aliceblue;
+  }
 }
-
 /* Flex Cards*/
 @media (min-width: 576px) {
   #cards-flex {
@@ -214,139 +227,12 @@ strong {
     background-image: linear-gradient(to right, rgb(44, 39, 39), chartreuse);
     width: 40rem;
     height: 35rem;
-    position: relative;
-    left: 33%;
-    max-width: 100%;
+    margin-left: 30%;
   }
 }
 .fondo_acerca {
   border-radius: 43% 57% 32% 68%/74% 20% 80% 26%;
   background-image: linear-gradient(to right, rgb(44, 39, 39), chartreuse);
-}
-
-/* animacion cubos*/
-@keyframes square-animation {
-  0% {
-    left: 0;
-    top: 0;
-  }
-  10.5% {
-    left: 0;
-    top: 0;
-  }
-  12.5% {
-    left: 32px;
-    top: 0;
-  }
-  23% {
-    left: 32px;
-    top: 0;
-  }
-  25% {
-    left: 64px;
-    top: 0;
-  }
-  35.5% {
-    left: 64px;
-    top: 0;
-  }
-  37.5% {
-    left: 64px;
-    top: 32px;
-  }
-  48% {
-    left: 64px;
-    top: 32px;
-  }
-  50% {
-    left: 32px;
-    top: 32px;
-  }
-  60.5% {
-    left: 32px;
-    top: 32px;
-  }
-  62.5% {
-    left: 32px;
-    top: 64px;
-  }
-  73% {
-    left: 32px;
-    top: 64px;
-  }
-  75% {
-    left: 0;
-    top: 64px;
-  }
-  85.5% {
-    left: 0;
-    top: 64px;
-  }
-  87.5% {
-    left: 0;
-    top: 32px;
-  }
-  98% {
-    left: 0;
-    top: 32px;
-  }
-  100% {
-    left: 0;
-    top: 0;
-  }
-}
-.loader {
-  position: relative;
-  width: 96px;
-  height: 96px;
-  transform: rotate(45deg);
-}
-
-.loader-square {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 28px;
-  height: 28px;
-  margin-left: 2rem;
-  border-radius: 0px;
-  background: rgb(0, 0, 0);
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
-  animation: square-animation 10s ease-in-out infinite both;
-}
-
-.loader-square:nth-of-type(0) {
-  animation-delay: 0s;
-}
-
-.loader-square:nth-of-type(1) {
-  animation-delay: -1.4285714286s;
-}
-
-.loader-square:nth-of-type(2) {
-  animation-delay: -2.8571428571s;
-}
-
-.loader-square:nth-of-type(3) {
-  animation-delay: -4.2857142857s;
-}
-
-.loader-square:nth-of-type(4) {
-  animation-delay: -5.7142857143s;
-}
-
-.loader-square:nth-of-type(5) {
-  animation-delay: -7.1428571429s;
-}
-
-.loader-square:nth-of-type(6) {
-  animation-delay: -8.5714285714s;
-}
-
-.loader-square:nth-of-type(7) {
-  animation-delay: -10s;
 }
 
 /*# sourceMappingURL=style.css.map */
