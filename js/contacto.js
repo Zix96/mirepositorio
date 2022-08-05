@@ -22,7 +22,7 @@ miFormulario.onsubmit = (e) => {
   let nombreIngresado = localStorage.getItem("nombre");
   let emailIngresado = localStorage.getItem("email");
   let telIngresado = localStorage.getItem("tel");
-  alert("Consulta enviada!!");
+  swal("Gracias", "Su consulta fue enviada correctamente!", "success");
   console.log(
     "Datos del usuario: " +
       nombreIngresado +
