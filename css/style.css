@@ -71,7 +71,7 @@ a {
   width: 250px;
   height: 200px;
   border-radius: 5px;
-  margin-left: 6rem;
+  margin-left: 4rem;
 }
 
 .descuento {
@@ -83,7 +83,8 @@ a {
   font-size: 50px;
 }
 
-h1, h3 {
+h1,
+h3 {
   text-align: center;
   color: chartreuse;
   font-family: "Contrail One", cursive;
@@ -108,7 +109,7 @@ h3 {
 }
 
 .imagen-ps4 {
-  margin-left: 6rem;
+  margin-left: 3.5rem;
   width: 250px;
   height: 200px;
   border-radius: 5px;
@@ -171,6 +172,26 @@ label {
     flex-direction: row;
   }
 }
+
+.botonCompra {
+  background: #fbca1f;
+  font-family: "Contrail One", cursive;
+  padding: 0.6em 1.3em;
+  font-weight: 900;
+  font-size: 20px;
+  border: 3px solid rgb(0, 0, 0);
+  border-radius: 0.4em;
+  box-shadow: 0.1em 0.1em;
+  margin-left: 5.5rem;
+}
+.botonCompra:hover {
+  transform: translate(-0.05em, -0.05em);
+  box-shadow: 0.15em 0.15em chartreuse;
+}
+.botonCompra:active {
+  transform: translate(0.05em, 0.05em);
+  box-shadow: 0.05em 0.05em;
+}
 .precio {
   color: chartreuse;
   font-family: "Contrail One", cursive;
@@ -186,7 +207,7 @@ label {
   text-align: center;
 }
 
-.item, .carousel-text {
+.carousel-text {
   text-align: center;
   font-family: "Contrail One", cursive;
   color: rgb(21, 153, 17);
