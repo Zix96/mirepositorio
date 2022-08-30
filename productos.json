@@ -1,4 +1,23 @@
 [
-  { "nombre": "PS5 PRO", "precio": 89999, "id": 1 },
-  { "nombre": "PS5 SLIM", "precio": 69999, "id": 2 }
+  {
+    "nombre": "PS5 PRO",
+    "precio": "$89.999",
+    "precioAnterior": "$99.999",
+    "id": 1,
+    "imagen": "../img/destacado.jpeg"
+  },
+  {
+    "nombre": "PS5 SLIM",
+    "precio": "$69.999",
+    "precioAnterior": "$79.999",
+    "id": 2,
+    "imagen": "../img/destacado2.jpg"
+  },
+  {
+    "nombre": "Joystick PS5",
+    "precio": "$29.999",
+    "precioAnterior": "$39.999",
+    "id": 3,
+    "imagen": "../img/joystickPS5.jpg"
+  }
 ]
