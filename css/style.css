@@ -12,7 +12,9 @@
   font-family: "Kanit", sans-serif;
   font-size: 30px;
 }
-
+.info {
+  font-size: 1.5rem;
+}
 /* CAROUSEL */
 h5 {
   font-family: "Contrail One", cursive;
@@ -215,7 +217,14 @@ label {
   color: rgb(21, 153, 17);
   font-size: 25px;
 }
-
+.table {
+  font-family: "Contrail One", cursive;
+  font-size: x-large;
+  color: black;
+  border-radius: 0px;
+  background: #e0e0e0;
+  box-shadow: inset 12px 12px 19px #5a5a5a, inset -12px -12px 19px #ffffff;
+}
 /* Animacion */
 @keyframes aparecer {
   0% {

@@ -1,23 +1,37 @@
 [
   {
+    "id": 1,
     "nombre": "PS5 PRO",
     "precio": "$89.999",
     "precioAnterior": "$99.999",
-    "id": 1,
     "imagen": "../img/destacado.jpeg"
   },
   {
+    "id": 2,
     "nombre": "PS5 SLIM",
     "precio": "$69.999",
     "precioAnterior": "$79.999",
-    "id": 2,
     "imagen": "../img/destacado2.jpg"
   },
   {
+    "id": 3,
     "nombre": "Joystick PS5",
     "precio": "$29.999",
     "precioAnterior": "$39.999",
-    "id": 3,
     "imagen": "../img/joystickPS5.jpg"
+  },
+  {
+    "id": 4,
+    "nombre": "Headset PS5",
+    "precio": "$49.999",
+    "precioAnterior": "$59.999",
+    "imagen": "../img/headsetPS5.jpg"
+  },
+  {
+    "id": 5,
+    "nombre": "Juego Spiderman PS5",
+    "precio": "$12.999",
+    "precioAnterior": "$14.999",
+    "imagen": "../img/juegoPS5.jpg"
   }
 ]
