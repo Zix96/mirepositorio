@@ -6,7 +6,7 @@ const $ = (id) => document.getElementById(id);
 
 // Dirección del servidor de notificaciones push (carpeta push-servidor/), sin barra final.
 // Vacía = solo avisos con la app abierta.
-const SERVIDOR_PUSH = '';
+const SERVIDOR_PUSH = 'https://recordatorio-push.botfrancis.workers.dev';
 
 let estado = cargar();
 
