@@ -1,244 +1,353 @@
 @import "variables";
 
+$verde: chartreuse;
+$rojo-producto: rgba(204, 11, 11, 0.719);
+$celular: 576px;
+$tablet: 768px;
+
 @mixin nav-menu {
   background-color: black;
-  transition: ease 2s;
-  color: chartreuse;
+  color: $verde;
   text-decoration: none;
   text-align: center;
-  font-family: "Kanit", sans-serif;
-  font-size: 30px;
-}
-.container {
-  max-width: 100%;
-  margin: 0;
-}
-.lista {
-  @include nav-menu;
+  font-family: $fuente-kanit;
 }
 
-/* CAROUSEL */
-.carousel-text {
-  @extend .item;
-}
-
-h5 {
-  font-family: $fuente-contrail;
-  font-size: 80px;
-  color: rgba(204, 11, 11, 0.719);
-}
-
-/* clase de la etiqueta "li"*/
-@media (min-width: 576px) {
-  .menu {
-    font-size: 30px;
-    display: inline-block;
-    margin-right: 60px;
-    text-align: right;
-
-    top: auto;
-  }
-}
-.imagen {
-  width: 50px;
-  height: 600px;
-
+/* GENERAL */
+body {
+  min-height: 100vh;
   display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  background-image: $imagen-fondo;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+.contenido {
+  flex: 1;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
 }
 
 a {
-  color: chartreuse;
+  color: $verde;
   text-decoration: none;
-  text-align: center;
-  font-family: "Kanit", sans-serif;
+  font-family: $fuente-kanit;
 }
 
-.lista:hover {
-  background-color: rgb(0, 0, 0);
+h1 {
+  text-align: center;
+  color: $verde;
+  font-family: $fuente-contrail;
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
 }
+
+h2 {
+  text-align: center;
+  font-family: $fuente-contrail;
+  font-size: clamp(2.25rem, 8vw, 5rem);
+}
+
+h3 {
+  text-align: center;
+  color: $verde;
+  font-family: $fuente-contrail;
+  font-size: clamp(1.4rem, 4vw, 2.5rem);
+}
+
+/* MENU */
+.lista {
+  @include nav-menu;
+  padding: 0.5rem 1rem;
+
+  .navbar-brand {
+    font-family: $fuente-contrail;
+    font-size: 1.6rem;
+    color: $verde;
+  }
+
+  .navbar-toggler {
+    border-color: $verde;
+  }
+
+  // Mismo peso que la regla de Bootstrap (.navbar-dark .navbar-nav .nav-link) para que gane el verde.
+  .navbar-nav .nav-link {
+    color: $verde;
+    font-size: 1.25rem;
+    padding: 0.5rem 1rem;
+    transition: color 0.3s;
+
+    &:hover,
+    &:focus {
+      color: #ffffff;
+    }
+
+    &.active {
+      color: $verde;
+      text-decoration: underline;
+      text-underline-offset: 6px;
+    }
+  }
+}
+
+/* INICIO */
 .cartel {
   border-radius: 43% 57% 32% 68% / 74% 20% 80% 26%;
   background-color: blueviolet;
   width: 11rem;
-  height: 4rem;
-  margin-left: 45%;
+  padding: 0.5rem 0;
+  margin: 0 auto 1.5rem;
+
+  h1 {
+    margin: 0;
+  }
 }
 
-/* box modeling producto ps5*/
-.card1 {
+.destacados {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.imagen {
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.carousel-caption {
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+
+  h5 {
+    font-family: $fuente-contrail;
+    font-size: clamp(2rem, 7vw, 5rem);
+    color: $rojo-producto;
+    margin: 0;
+  }
+}
+
+// En celular la leyenda va debajo de la imagen para no taparla.
+@media (max-width: #{$tablet - 1px}) {
+  .carousel-caption {
+    position: static;
+    border-radius: 0;
+    background: #000000;
+    padding-bottom: 2.5rem;
+  }
+
+  .carousel-indicators {
+    margin-bottom: 0.5rem;
+  }
+
+  .carousel-control-prev,
+  .carousel-control-next {
+    bottom: auto;
+    aspect-ratio: 1;
+    top: 0;
+    height: auto;
+    padding-top: 28%;
+    align-items: flex-start;
+  }
+}
+
+.carousel-text,
+.item {
+  text-align: center;
+  font-family: $fuente-contrail;
+  color: rgb(21, 153, 17);
+  font-size: clamp(1rem, 2.5vw, 1.5rem);
+  margin: 0;
+}
+
+/* PRODUCTOS */
+#cards-flex {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.card1,
+.card2 {
   background-color: black;
   padding: 15px;
-  height: 25%;
   border-style: double;
-  border-color: chartreuse;
+  border-color: $verde;
+  border-radius: 8px;
+  text-align: center;
 }
-/* imagen de la ps5*/
-.imagen-ps5 {
-  width: 250px;
-  height: 200px;
+
+.imagen-ps5,
+.imagen-ps4 {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
   border-radius: 5px;
-  margin-left: 6rem;
+  margin-bottom: 1rem;
 }
 
 .descuento {
   background-color: green;
   color: aliceblue;
-  z-index: 1;
-  font-family: "Contrail One", cursive;
+  font-family: $fuente-contrail;
   text-align: center;
-  font-size: 50px;
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
+  padding: 0.25rem;
 }
 
-h1 {
+.nombre-producto {
+  color: $rojo-producto;
+}
+
+.precio,
+.precio- {
+  color: $verde;
+  font-family: $fuente-contrail;
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
   text-align: center;
-  color: chartreuse;
-  font-family: "Contrail One", cursive;
-}
-
-h2 {
-  text-align: center;
-  font-family: "Contrail One", cursive;
-  font-size: 5rem;
-}
-
-h3 {
-  @extend h1;
-  font-size: 40px;
-}
-.listaServicios {
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  font-size: 3rem;
-  background-color: rgb(0, 0, 0);
-  color: rgb(240, 240, 240);
-  background: rgba(14, 5, 14, 0.8);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-  backdrop-filter: blur(0px);
-  -webkit-backdrop-filter: blur(0px);
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-}
-/* producto ps4 */
-
-.card2 {
-  background-color: black;
-  padding: 15px;
-  height: 25%;
-  border-style: double;
-  border-color: chartreuse;
-}
-
-.imagen-ps4 {
-  margin-left: 6rem;
-  width: 250px;
-  height: 200px;
-  border-radius: 5px;
-}
-
-body {
-  background-color: #ffffff;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 800 800'%3E%3Cg fill='none' stroke='%23404' stroke-width='1'%3E%3Cpath d='M769 229L1037 260.9M927 880L731 737 520 660 309 538 40 599 295 764 126.5 879.5 40 599-197 493 102 382-31 229 126.5 79.5-69-63'/%3E%3Cpath d='M-31 229L237 261 390 382 603 493 308.5 537.5 101.5 381.5M370 905L295 764'/%3E%3Cpath d='M520 660L578 842 731 737 840 599 603 493 520 660 295 764 309 538 390 382 539 269 769 229 577.5 41.5 370 105 295 -36 126.5 79.5 237 261 102 382 40 599 -69 737 127 880'/%3E%3Cpath d='M520-140L578.5 42.5 731-63M603 493L539 269 237 261 370 105M902 382L539 269M390 382L102 382'/%3E%3Cpath d='M-222 42L126.5 79.5 370 105 539 269 577.5 41.5 927 80 769 229 902 382 603 493 731 737M295-36L577.5 41.5M578 842L295 764M40-201L127 80M102 382L-261 269'/%3E%3C/g%3E%3Cg fill='%23505'%3E%3Ccircle cx='769' cy='229' r='5'/%3E%3Ccircle cx='539' cy='269' r='5'/%3E%3Ccircle cx='603' cy='493' r='5'/%3E%3Ccircle cx='731' cy='737' r='5'/%3E%3Ccircle cx='520' cy='660' r='5'/%3E%3Ccircle cx='309' cy='538' r='5'/%3E%3Ccircle cx='295' cy='764' r='5'/%3E%3Ccircle cx='40' cy='599' r='5'/%3E%3Ccircle cx='102' cy='382' r='5'/%3E%3Ccircle cx='127' cy='80' r='5'/%3E%3Ccircle cx='370' cy='105' r='5'/%3E%3Ccircle cx='578' cy='42' r='5'/%3E%3Ccircle cx='237' cy='261' r='5'/%3E%3Ccircle cx='390' cy='382' r='5'/%3E%3C/g%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-size: cover;
-}
-footer {
-  margin-top: 2rem;
-  font-family: $fuente-kanit;
-  font-size: x-large;
-}
-
-/*formulario*/
-
-@media (min-width: 576px) {
-  fieldset {
-    margin-left: 10rem;
-    margin-right: 10rem;
-    text-align: center;
-    height: 10rem;
-    font-family: "Contrail One", cursive;
-    border: none;
-    font-size: xx-large;
-  }
-  textarea {
-    font-size: x-large;
-  }
-  .boton {
-    font-size: x-large;
-    border-radius: 30px;
-  }
-
-  legend {
-    color: aliceblue;
-    font-size: xx-large;
-    text-shadow: 40rem;
-  }
-
-  label {
-    color: aliceblue;
-  }
-}
-/* Flex Cards*/
-@media (min-width: 576px) {
-  #cards-flex {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-  }
-}
-@media (min-width: 768px) {
-  #cards-flex {
-    flex-direction: row;
-  }
-}
-
-.precio {
-  color: chartreuse;
-  font-family: "Contrail One", cursive;
-  font-size: 40px;
-  text-align: center;
+  margin-bottom: 0.5rem;
 }
 
 .precio- {
   text-decoration: line-through black;
-  color: chartreuse;
-  font-family: "Contrail One", cursive;
-  font-size: 40px;
-  text-align: center;
 }
 
-.item {
-  text-align: center;
-  font-family: "Contrail One", cursive;
-  color: rgb(21, 153, 17);
-  font-size: 25px;
-}
-
-/* Animacion */
-@keyframes aparecer {
-  0% {
-    opacity: 0;
-  }
-
-  100% {
-    opacity: 1;
-  }
-}
-
-strong {
-  color: rgb(0, 0, 0);
-  font-size: 40px;
-}
-/* backgrounds */
-@media (min-width: 576px) {
-  .fondo_contacto {
-    border-radius: 43% 57% 32% 68% / 74% 20% 80% 26%;
-    background-image: $gradientes;
-    width: 40rem;
-    height: 35rem;
-    margin-left: 30%;
-  }
-}
+/* ACERCA DE NOSOTROS */
 .fondo_acerca {
   border-radius: 43% 57% 32% 68% / 74% 20% 80% 26%;
   background-image: $gradientes;
+  padding: 2.5rem 1.5rem;
+  margin-bottom: 2rem;
+
+  h3 {
+    color: #000000;
+    font-style: italic;
+    font-size: clamp(1.2rem, 3.5vw, 2.5rem);
+    margin: 0;
+  }
+}
+
+/* Videos y mapa: ocupan todo el ancho disponible sin deformarse */
+.video {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto 2rem;
+  aspect-ratio: 16 / 9;
+
+  iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    border-radius: 10px;
+  }
+}
+
+.mapa {
+  aspect-ratio: 4 / 3;
+}
+
+/* SERVICIOS */
+.titulo-servicios {
+  font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
+  font-size: clamp(2.25rem, 8vw, 5rem);
+}
+
+.listaServicios {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: rgb(240, 240, 240);
+  background: rgba(14, 5, 14, 0.8);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  padding: 1.5rem 1rem 0.5rem;
+
+  h2 {
+    font-family: inherit;
+    font-size: clamp(1.4rem, 4vw, 2.25rem);
+    margin-bottom: 1rem;
+  }
+}
+
+/* CONTACTO */
+.datos-contacto h3 {
+  color: #000000;
+  font-size: clamp(1.25rem, 4vw, 2rem);
+  overflow-wrap: anywhere;
+}
+
+.fondo_contacto {
+  background-image: $gradientes;
+  border-radius: 24px;
+  max-width: 40rem;
+  margin: 2rem auto 0;
+  padding: 1.5rem;
+
+  @media (min-width: $tablet) {
+    border-radius: 43% 57% 32% 68% / 74% 20% 80% 26%;
+    padding: 4rem 7rem;
+  }
+}
+
+fieldset {
+  font-family: $fuente-contrail;
+  text-align: center;
+}
+
+legend,
+label {
+  color: aliceblue;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+legend {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+}
+
+.campo {
+  margin-bottom: 0.75rem;
+  text-align: left;
+
+  label {
+    display: block;
+    font-size: 1.25rem;
+  }
+
+  input,
+  textarea {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    font-size: 1rem;
+    border: 0;
+    border-radius: 8px;
+  }
+}
+
+.botones {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.boton {
+  font-size: 1.25rem;
+  border-radius: 30px;
+  border: 0;
+  padding: 0.4rem 1.5rem;
+  background: #000000;
+  color: $verde;
+}
+
+/* PIE */
+footer {
+  margin-top: 2rem;
+  padding: 1rem;
+  text-align: center;
+  font-family: $fuente-kanit;
+  font-size: clamp(1rem, 2.5vw, 1.25rem);
 }
