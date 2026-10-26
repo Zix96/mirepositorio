@@ -1,0 +1,14 @@
+{
+  "name": "Recordatorio diario",
+  "short_name": "Recordatorio",
+  "description": "Hacé la misma acción todos los días y mantené tu racha.",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f5fb",
+  "theme_color": "#4f46e5",
+  "icons": [
+    { "src": "icono.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

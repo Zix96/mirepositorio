@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Recordatorio diario para hacer la misma acción todos los días y mantener la racha.">
+  <meta name="theme-color" content="#4f46e5">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icono.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icono.svg">
+  <link rel="stylesheet" href="styles.css">
+  <title>Recordatorio diario</title>
+</head>
+<body>
+  <main class="app">
+    <header class="encabezado">
+      <h1>Recordatorio diario</h1>
+      <button id="btn-ajustes" class="btn-icono" type="button" aria-label="Ajustes" title="Ajustes">⚙</button>
+    </header>
+
+    <!-- Pantalla principal -->
+    <section id="vista-principal" hidden>
+      <div id="aviso" class="aviso" role="status" hidden></div>
+
+      <article class="tarjeta hoy">
+        <p class="etiqueta">Tu acción de cada día</p>
+        <h2 id="texto-accion"></h2>
+        <p class="hora">Recordatorio a las <strong id="texto-hora"></strong></p>
+        <button id="btn-hecho" class="btn-principal" type="button"></button>
+      </article>
+
+      <div class="estadisticas">
+        <div class="stat">
+          <span id="racha-actual" class="numero">0</span>
+          <span class="etiqueta">días seguidos</span>
+        </div>
+        <div class="stat">
+          <span id="racha-mejor" class="numero">0</span>
+          <span class="etiqueta">mejor racha</span>
+        </div>
+        <div class="stat">
+          <span id="total" class="numero">0</span>
+          <span class="etiqueta">días en total</span>
+        </div>
+      </div>
+
+      <article class="tarjeta">
+        <h3>Últimos 28 días</h3>
+        <div id="calendario" class="calendario" aria-label="Historial de los últimos 28 días"></div>
+        <p class="ayuda">Tocá un día para marcarlo o desmarcarlo si te olvidaste de registrarlo.</p>
+      </article>
+    </section>
+
+    <!-- Configuración -->
+    <section id="vista-ajustes" hidden>
+      <form id="form-ajustes" class="tarjeta">
+        <h2 id="titulo-ajustes">Configurá tu recordatorio</h2>
+
+        <label for="campo-accion">¿Qué querés hacer todos los días?</label>
+        <input id="campo-accion" type="text" maxlength="80" required placeholder="Ej: Tomar la pastilla, leer 10 páginas…">
+
+        <label for="campo-hora">¿A qué hora te lo recuerdo?</label>
+        <input id="campo-hora" type="time" required value="20:00">
+
+        <button class="btn-principal" type="submit">Guardar</button>
+        <button id="btn-cancelar" class="btn-secundario" type="button" hidden>Cancelar</button>
+      </form>
+
+      <article class="tarjeta">
+        <h3>Avisos</h3>
+        <p class="ayuda">
+          <strong>Notificaciones:</strong> te avisan a la hora elegida mientras la app esté abierta
+          (o en segundo plano en la pestaña / app instalada).
+        </p>
+        <button id="btn-notificaciones" class="btn-secundario" type="button">Activar notificaciones</button>
+
+        <p class="ayuda">
+          <strong>Alarma en tu calendario (recomendado):</strong> agrega un evento diario con alarma
+          a Google Calendar, el calendario del iPhone u Outlook. Suena aunque la app esté cerrada.
+        </p>
+        <button id="btn-calendario" class="btn-secundario" type="button">Descargar evento diario (.ics)</button>
+      </article>
+
+      <article class="tarjeta">
+        <h3>Datos</h3>
+        <p class="ayuda">Todo se guarda solo en este dispositivo.</p>
+        <button id="btn-borrar" class="btn-peligro" type="button">Borrar historial</button>
+      </article>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
