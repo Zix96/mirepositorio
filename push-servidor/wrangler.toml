@@ -1,0 +1,18 @@
+# Servidor de notificaciones push del Recordatorio diario (Cloudflare Workers).
+# Se despliega solo con .github/workflows/desplegar-push.yml.
+name = "recordatorio-push"
+main = "src/index.js"
+compatibility_date = "2025-06-01"
+
+# Revisa cada minuto si a alguien le toca el recordatorio.
+[triggers]
+crons = ["* * * * *"]
+
+[vars]
+ORIGEN_PERMITIDO = "https://zix96.github.io"
+CONTACTO = "https://zix96.github.io/mirepositorio/recordatorio/"
+
+# El flujo de despliegue reemplaza ID_KV por el id real del espacio KV.
+[[kv_namespaces]]
+binding = "DATOS"
+id = "ID_KV"

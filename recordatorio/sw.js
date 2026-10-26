@@ -1,5 +1,5 @@
 // Service worker: guarda la app para usarla sin conexión y maneja el clic en las notificaciones.
-const CACHE = 'recordatorio-v1';
+const CACHE = 'recordatorio-v2';
 const ARCHIVOS = ['./', 'index.html', 'styles.css', 'app.js', 'icono.svg', 'manifest.webmanifest'];
 
 self.addEventListener('install', (event) => {
@@ -18,7 +18,7 @@ self.addEventListener('activate', (event) => {
 
 // Primero la red (para recibir actualizaciones); si no hay conexión, la copia guardada.
 self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return;
+  if (event.request.method !== 'GET' || new URL(event.request.url).origin !== location.origin) return;
   event.respondWith(
     fetch(event.request)
       .then((respuesta) => {
@@ -27,6 +27,20 @@ self.addEventListener('fetch', (event) => {
         return respuesta;
       })
       .catch(() => caches.match(event.request))
+  );
+});
+
+// Aviso que manda el servidor push (push-servidor/) aunque la app esté cerrada.
+self.addEventListener('push', (event) => {
+  let datos = {};
+  try { datos = event.data ? event.data.json() : {}; } catch (e) { /* mensaje sin formato */ }
+  event.waitUntil(
+    self.registration.showNotification(datos.titulo || 'Recordatorio diario', {
+      body: datos.cuerpo || 'Es hora de tu acción de hoy',
+      icon: 'icono.svg',
+      tag: 'recordatorio-diario',
+      renotify: true,
+    })
   );
 });
 

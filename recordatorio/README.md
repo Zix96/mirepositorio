@@ -25,7 +25,7 @@ python3 -m http.server 8000
 Para usarla en el celular, publicala gratis con GitHub Pages
 (Settings → Pages → rama y carpeta) y entrá a `https://<usuario>.github.io/mirepositorio/recordatorio/`.
 
-## Limitación
-Un navegador no puede despertar una página cerrada sin un servidor de notificaciones push,
-así que las notificaciones de la app salen cuando está abierta o en segundo plano.
-Para un aviso garantizado, usá el evento de calendario `.ics`.
+## Notificaciones con la app cerrada
+Las manda el servidor de [`push-servidor/`](../push-servidor/README.md) (Cloudflare Workers, gratis).
+Mientras `SERVIDOR_PUSH` en `app.js` esté vacío, la app solo avisa cuando está abierta.
+En iPhone las notificaciones push requieren iOS 16.4+ y abrir la app desde el ícono de inicio.

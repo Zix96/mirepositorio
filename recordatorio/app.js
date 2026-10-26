@@ -4,6 +4,10 @@
 const CLAVE = 'recordatorio-diario';
 const $ = (id) => document.getElementById(id);
 
+// Dirección del servidor de notificaciones push (carpeta push-servidor/), sin barra final.
+// Vacía = solo avisos con la app abierta.
+const SERVIDOR_PUSH = '';
+
 let estado = cargar();
 
 function cargar() {
@@ -74,6 +78,7 @@ function alternarDia(dia) {
   }
   guardar();
   dibujar();
+  sincronizar();
 }
 
 // ---- Interfaz ----
@@ -139,12 +144,63 @@ function revisarRecordatorio() {
   aviso.hidden = !pendiente;
   if (pendiente) aviso.textContent = `⏰ Todavía no hiciste: ${estado.accion}`;
 
-  // Una sola notificación por día.
+  // Una sola notificación por día. Con push activo la manda el servidor.
   if (pendiente && estado.ultimoAviso !== hoy()) {
     estado.ultimoAviso = hoy();
     guardar();
-    notificar();
+    if (!estado.pushActivo) notificar();
   }
+}
+
+// ---- Notificaciones push (llegan aunque la app esté cerrada) ----
+
+const pushDisponible = () =>
+  Boolean(SERVIDOR_PUSH) && 'serviceWorker' in navigator && 'PushManager' in window;
+
+function deBase64Url(cadena) {
+  const b64 = cadena.replace(/-/g, '+').replace(/_/g, '/');
+  const binario = atob(b64 + '='.repeat((4 - (b64.length % 4)) % 4));
+  return Uint8Array.from(binario, (c) => c.charCodeAt(0));
+}
+
+async function suscribirPush() {
+  try {
+    const registro = await navigator.serviceWorker.ready;
+    if (!(await registro.pushManager.getSubscription())) {
+      const { clave } = await (await fetch(`${SERVIDOR_PUSH}/clave-publica`)).json();
+      await registro.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: deBase64Url(clave) });
+    }
+    await sincronizar();
+  } catch (e) {
+    alert('No se pudieron activar los avisos push. Revisá tu conexión e intentá de nuevo.');
+  }
+  actualizarBotonNotificaciones();
+}
+
+// Le cuenta al servidor la acción, la hora y el último día hecho, para que no avise si ya lo hiciste.
+async function sincronizar() {
+  if (!pushDisponible() || Notification.permission !== 'granted' || !estado.accion) return;
+  try {
+    const registro = await navigator.serviceWorker.ready;
+    const suscripcion = await registro.pushManager.getSubscription();
+    if (!suscripcion) {
+      estado.pushActivo = false;
+      return;
+    }
+    const respuesta = await fetch(`${SERVIDOR_PUSH}/sincronizar`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        suscripcion: suscripcion.toJSON(),
+        accion: estado.accion,
+        hora: estado.hora,
+        zona: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        ultimoHecho: [...estado.dias].sort().pop() || null,
+      }),
+    });
+    estado.pushActivo = respuesta.ok;
+    guardar();
+  } catch (e) { /* sin conexión: se reintenta la próxima vez que se abra la app */ }
 }
 
 async function notificar() {
@@ -169,11 +225,16 @@ async function notificar() {
 
 function actualizarBotonNotificaciones() {
   const boton = $('btn-notificaciones');
+  boton.disabled = false;
   if (!('Notification' in window)) {
     boton.textContent = 'Este navegador no admite notificaciones';
     boton.disabled = true;
+  } else if (Notification.permission === 'granted' && pushDisponible() && !estado.pushActivo) {
+    boton.textContent = 'Activar avisos con la app cerrada';
   } else if (Notification.permission === 'granted') {
-    boton.textContent = '✓ Notificaciones activadas (probar)';
+    boton.textContent = estado.pushActivo
+      ? '✓ Avisos activados, aunque la app esté cerrada (probar)'
+      : '✓ Notificaciones activadas (probar)';
   } else if (Notification.permission === 'denied') {
     boton.textContent = 'Notificaciones bloqueadas en el navegador';
     boton.disabled = true;
@@ -232,14 +293,17 @@ $('form-ajustes').addEventListener('submit', (e) => {
   guardar();
   mostrarVista('principal');
   dibujar();
+  sincronizar();
 });
 
 $('btn-notificaciones').addEventListener('click', async () => {
-  if (Notification.permission === 'granted') {
+  if (Notification.permission !== 'granted') {
+    await Notification.requestPermission();
+  } else if (!pushDisponible() || estado.pushActivo) {
     notificar();
     return;
   }
-  await Notification.requestPermission();
+  if (Notification.permission === 'granted' && pushDisponible()) await suscribirPush();
   actualizarBotonNotificaciones();
 });
 
@@ -256,6 +320,7 @@ $('btn-borrar').addEventListener('click', () => {
     estado.dias = [];
     guardar();
     dibujar();
+    sincronizar();
   }
 });
 
@@ -274,6 +339,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
 if (estado.accion) {
   mostrarVista('principal');
   dibujar();
+  sincronizar();
 } else {
   mostrarVista('ajustes');
 }

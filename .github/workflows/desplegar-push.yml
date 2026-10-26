@@ -1,0 +1,56 @@
+# Publica el servidor de notificaciones push (push-servidor/) en Cloudflare Workers.
+# Necesita los secretos del repositorio CLOUDFLARE_API_TOKEN y CLOUDFLARE_ACCOUNT_ID.
+name: Desplegar servidor push
+
+on:
+  push:
+    paths:
+      - 'push-servidor/**'
+      - '.github/workflows/desplegar-push.yml'
+  workflow_dispatch:
+
+jobs:
+  desplegar:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      WRANGLER: npx -y wrangler@4.20.0
+      WRANGLER_SEND_METRICS: 'false'
+    defaults:
+      run:
+        working-directory: push-servidor
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Revisar secretos
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::error::Faltan los secretos CLOUDFLARE_API_TOKEN y/o CLOUDFLARE_ACCOUNT_ID (Settings → Secrets and variables → Actions)."
+            exit 1
+          fi
+
+      - name: Crear el espacio de datos (KV) si no existe
+        run: |
+          buscar() {
+            $WRANGLER kv namespace list | node -e '
+              let s = ""; process.stdin.on("data", (d) => (s += d)).on("end", () => {
+                const lista = JSON.parse(s.slice(s.search(/^\[/m), s.lastIndexOf("]") + 1));
+                const ns = lista.find((n) => n.title.endsWith("recordatorio-push-datos"));
+                process.stdout.write(ns ? ns.id : "");
+              });'
+          }
+          ID=$(buscar)
+          if [ -z "$ID" ]; then
+            $WRANGLER kv namespace create recordatorio-push-datos
+            ID=$(buscar)
+          fi
+          test -n "$ID"
+          sed -i "s/ID_KV/$ID/" wrangler.toml
+
+      - name: Publicar
+        run: $WRANGLER deploy
