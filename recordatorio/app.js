@@ -1,35 +1,25 @@
 // Recordatorio diario: una acción, una hora, y el registro de los días cumplidos.
-// Todo se guarda en localStorage de este dispositivo.
+// Todo se guarda en localStorage de este dispositivo. SERVIDOR_PUSH y las opciones
+// de la notificación están en comun.js, que también usa el service worker.
 
 const CLAVE = 'recordatorio-diario';
 const $ = (id) => document.getElementById(id);
-
-// Dirección del servidor de notificaciones push (carpeta push-servidor/), sin barra final.
-// Vacía = solo avisos con la app abierta.
-const SERVIDOR_PUSH = 'https://recordatorio-push.botfrancis.workers.dev';
 
 let estado = cargar();
 
 function cargar() {
   try {
     const datos = JSON.parse(localStorage.getItem(CLAVE));
-    if (datos && datos.accion) return { dias: [], ultimoAviso: null, ...datos };
+    if (datos && datos.accion) return { dias: [], ultimoAviso: null, mensaje: '', repetir: 0, ...datos };
   } catch (e) { /* datos dañados o sin acceso: empezamos de cero */ }
-  return { accion: '', hora: '20:00', dias: [], ultimoAviso: null };
+  return { accion: '', hora: '20:00', dias: [], ultimoAviso: null, mensaje: '', repetir: 0 };
 }
 
 function guardar() {
   try { localStorage.setItem(CLAVE, JSON.stringify(estado)); } catch (e) { /* sin almacenamiento */ }
 }
 
-// ---- Fechas (siempre en hora local, formato AAAA-MM-DD) ----
-
-function claveFecha(fecha) {
-  const a = fecha.getFullYear();
-  const m = String(fecha.getMonth() + 1).padStart(2, '0');
-  const d = String(fecha.getDate()).padStart(2, '0');
-  return `${a}-${m}-${d}`;
-}
+// ---- Fechas (siempre en hora local, formato AAAA-MM-DD; claveFecha está en comun.js) ----
 
 function sumarDias(fecha, n) {
   const copia = new Date(fecha);
@@ -90,6 +80,9 @@ function mostrarVista(vista) {
   if (vista === 'ajustes') {
     $('campo-accion').value = estado.accion;
     $('campo-hora').value = estado.hora;
+    $('campo-mensaje').value = estado.mensaje;
+    $('campo-repetir').value = String(estado.repetir);
+    actualizarEjemploMensaje();
     $('titulo-ajustes').textContent = estado.accion ? 'Ajustes' : 'Configurá tu recordatorio';
     $('btn-cancelar').hidden = !estado.accion;
     actualizarBotonNotificaciones();
@@ -152,6 +145,30 @@ function revisarRecordatorio() {
   }
 }
 
+const textoNotificacion = () => estado.mensaje || `Es hora de: ${estado.accion}`;
+
+function actualizarEjemploMensaje() {
+  const accion = $('campo-accion').value.trim() || 'tu acción';
+  $('campo-mensaje').placeholder = `Es hora de: ${accion}`;
+}
+
+// Anota los días marcados con el botón "✓ Hecho" de la notificación (los guarda el service worker).
+async function aplicarHechosPendientes() {
+  if (!('caches' in window)) return;
+  try {
+    const cache = await caches.open(CACHE_DATOS);
+    const respuesta = await cache.match(CLAVE_HECHOS);
+    if (!respuesta) return;
+    const fechas = await respuesta.json();
+    await cache.delete(CLAVE_HECHOS);
+    const nuevas = fechas.filter((f) => !estado.dias.includes(f));
+    if (!nuevas.length) return;
+    estado.dias.push(...nuevas);
+    guardar();
+    if (estado.accion) dibujar();
+  } catch (e) { /* sin acceso al almacenamiento: no hay nada para anotar */ }
+}
+
 // ---- Notificaciones push (llegan aunque la app esté cerrada) ----
 
 const pushDisponible = () =>
@@ -193,6 +210,8 @@ async function sincronizar() {
       body: JSON.stringify({
         suscripcion: suscripcion.toJSON(),
         accion: estado.accion,
+        mensaje: estado.mensaje,
+        repetir: estado.repetir,
         hora: estado.hora,
         zona: Intl.DateTimeFormat().resolvedOptions().timeZone,
         ultimoHecho: [...estado.dias].sort().pop() || null,
@@ -206,19 +225,16 @@ async function sincronizar() {
 async function notificar() {
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
   const titulo = 'Recordatorio diario';
-  const opciones = {
-    body: `Es hora de: ${estado.accion}`,
-    icon: 'icono.svg',
-    tag: 'recordatorio-diario',
-    renotify: true,
-  };
+  const opciones = opcionesNotificacion(textoNotificacion(), hoy());
   try {
     // En Android las notificaciones deben salir del service worker.
     const registro = 'serviceWorker' in navigator && (await navigator.serviceWorker.getRegistration());
     if (registro) {
       await registro.showNotification(titulo, opciones);
     } else {
-      new Notification(titulo, opciones);
+      // Fuera del service worker no se permiten botones.
+      const { actions, ...sinBotones } = opciones;
+      new Notification(titulo, sinBotones);
     }
   } catch (e) { /* el navegador no permitió mostrarla; queda el aviso en pantalla */ }
 }
@@ -243,41 +259,6 @@ function actualizarBotonNotificaciones() {
   }
 }
 
-// ---- Evento de calendario (.ics) con alarma diaria ----
-
-function descargarCalendario() {
-  const [h, m] = estado.hora.split(':');
-  const inicio = hoy().replace(/-/g, '') + `T${h}${m}00`;
-  const sello = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
-  const texto = estado.accion.replace(/([,;\\])/g, '\\$1');
-  const ics = [
-    'BEGIN:VCALENDAR',
-    'VERSION:2.0',
-    'PRODID:-//Recordatorio diario//ES',
-    'BEGIN:VEVENT',
-    `UID:recordatorio-${Date.now()}@recordatorio-diario`,
-    `DTSTAMP:${sello}`,
-    `DTSTART:${inicio}`,
-    'DURATION:PT15M',
-    'RRULE:FREQ=DAILY',
-    `SUMMARY:${texto}`,
-    'DESCRIPTION:Recordatorio diario. Marcalo como hecho en la app.',
-    'BEGIN:VALARM',
-    'ACTION:DISPLAY',
-    `DESCRIPTION:${texto}`,
-    'TRIGGER:PT0M',
-    'END:VALARM',
-    'END:VEVENT',
-    'END:VCALENDAR',
-  ].join('\r\n');
-
-  const enlace = document.createElement('a');
-  enlace.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }));
-  enlace.download = 'recordatorio-diario.ics';
-  enlace.click();
-  setTimeout(() => URL.revokeObjectURL(enlace.href), 1000);
-}
-
 // ---- Eventos ----
 
 $('btn-hecho').addEventListener('click', () => alternarDia(hoy()));
@@ -289,6 +270,8 @@ $('form-ajustes').addEventListener('submit', (e) => {
   const horaCambio = estado.hora !== $('campo-hora').value;
   estado.accion = $('campo-accion').value.trim();
   estado.hora = $('campo-hora').value;
+  estado.mensaje = $('campo-mensaje').value.trim();
+  estado.repetir = Number($('campo-repetir').value);
   if (horaCambio) estado.ultimoAviso = null;
   guardar();
   mostrarVista('principal');
@@ -307,13 +290,7 @@ $('btn-notificaciones').addEventListener('click', async () => {
   actualizarBotonNotificaciones();
 });
 
-$('btn-calendario').addEventListener('click', () => {
-  if (!estado.accion) {
-    alert('Primero guardá tu acción y la hora.');
-    return;
-  }
-  descargarCalendario();
-});
+$('campo-accion').addEventListener('input', actualizarEjemploMensaje);
 
 $('btn-borrar').addEventListener('click', () => {
   if (confirm('¿Borrar todos los días registrados? Esto no se puede deshacer.')) {
@@ -326,12 +303,18 @@ $('btn-borrar').addEventListener('click', () => {
 
 // Revisar cada 30 segundos, y al volver a la app (por si pasó la medianoche).
 setInterval(() => estado.accion && dibujar(), 30 * 1000);
-document.addEventListener('visibilitychange', () => {
-  if (!document.hidden && estado.accion) dibujar();
+document.addEventListener('visibilitychange', async () => {
+  if (document.hidden || !estado.accion) return;
+  await aplicarHechosPendientes();
+  dibujar();
 });
 
 if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   navigator.serviceWorker.register('sw.js').catch(() => {});
+  // El service worker avisa cuando se marcó "Hecho" desde la notificación con la app abierta.
+  navigator.serviceWorker.addEventListener('message', (e) => {
+    if (e.data && e.data.tipo === 'hecho') aplicarHechosPendientes();
+  });
 }
 
 // ---- Inicio ----
@@ -339,7 +322,8 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
 if (estado.accion) {
   mostrarVista('principal');
   dibujar();
-  sincronizar();
+  // Primero anotar lo marcado desde la notificación, para no mandarle al servidor un día viejo.
+  aplicarHechosPendientes().then(sincronizar);
 } else {
   mostrarVista('ajustes');
 }

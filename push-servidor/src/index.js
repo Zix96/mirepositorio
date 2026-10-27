@@ -1,8 +1,11 @@
 // Servidor push del Recordatorio diario.
 //
 // GET  /clave-publica  -> clave pública VAPID para suscribirse a las notificaciones.
-// POST /sincronizar    -> la app guarda su suscripción, acción, hora, zona horaria y último día hecho.
-// Cron cada minuto     -> manda la notificación a quien ya pasó su hora y no marcó "Hecho" hoy.
+// POST /sincronizar    -> la app guarda su suscripción, acción, mensaje, hora, zona horaria,
+//                         cada cuánto repetir el aviso y el último día hecho.
+// POST /hecho          -> el botón "✓ Hecho" de la notificación marca el día sin abrir la app.
+// Cron cada minuto     -> manda la notificación a quien ya pasó su hora y no marcó "Hecho" hoy,
+//                         y la repite cada tanto si así lo eligió.
 //
 // Las claves VAPID se generan solas la primera vez y quedan guardadas en KV:
 // la clave privada nunca sale de Cloudflare.
@@ -10,6 +13,8 @@
 import { claveVapid, enviarPush } from './push.js';
 
 const MAX_SUSCRIPCIONES = 20;
+const MAX_AVISOS_POR_DIA = 10;
+const REPETICIONES = [0, 30, 60, 120, 180]; // minutos; 0 = no repetir
 
 export default {
   async fetch(request, env) {
@@ -44,15 +49,40 @@ export default {
           keys: { p256dh: datos.suscripcion.keys.p256dh, auth: datos.suscripcion.keys.auth },
         },
         accion: datos.accion.slice(0, 80),
+        mensaje: (datos.mensaje || '').trim().slice(0, 120),
         hora: datos.hora,
         zona: datos.zona,
+        repetir: datos.repetir || 0,
         ultimoHecho: datos.ultimoHecho || null,
-        // Si cambió la hora, se puede volver a avisar hoy.
-        ultimoAviso: anterior && anterior.hora === datos.hora ? anterior.ultimoAviso : null,
+        ultimoAviso: null,
+        avisosHoy: 0,
+        ultimoAvisoMs: 0,
       };
+      // Si no cambió la hora, se conserva el registro de avisos de hoy; si cambió, se puede volver a avisar.
+      if (anterior && anterior.hora === datos.hora) {
+        nueva.ultimoAviso = anterior.ultimoAviso;
+        nueva.avisosHoy = anterior.avisosHoy || (anterior.ultimoAviso ? 1 : 0);
+        nueva.ultimoAvisoMs = anterior.ultimoAvisoMs || 0;
+      }
       const resto = lista.filter((s) => s !== anterior);
       if (!anterior && resto.length >= MAX_SUSCRIPCIONES) return responder({ error: 'Límite de dispositivos' }, 429);
       await guardarSuscripciones(env.DATOS, [...resto, nueva]);
+      return responder({ ok: true });
+    }
+
+    if (request.method === 'POST' && pathname === '/hecho') {
+      let datos;
+      try { datos = await request.json(); } catch { return responder({ error: 'JSON inválido' }, 400); }
+      if (!datos || typeof datos.endpoint !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(datos.fecha || '')) {
+        return responder({ error: 'Datos inválidos' }, 400);
+      }
+      const lista = await leerSuscripciones(env.DATOS);
+      const s = lista.find((x) => x.suscripcion.endpoint === datos.endpoint);
+      if (!s) return responder({ error: 'Suscripción desconocida' }, 404);
+      if (!s.ultimoHecho || datos.fecha > s.ultimoHecho) {
+        s.ultimoHecho = datos.fecha;
+        await guardarSuscripciones(env.DATOS, lista);
+      }
       return responder({ ok: true });
     }
 
@@ -73,19 +103,29 @@ export async function revisar(env, ahora) {
   for (const s of lista) {
     const { fecha, minutos } = horaLocal(ahora, s.zona);
     const [h, m] = s.hora.split(':').map(Number);
-    const toca = minutos >= h * 60 + m && s.ultimoHecho !== fecha && s.ultimoAviso !== fecha;
-    if (!toca) {
+    const pendiente = minutos >= h * 60 + m && s.ultimoHecho !== fecha;
+    const primerAviso = s.ultimoAviso !== fecha;
+    const avisosHoy = primerAviso ? 0 : s.avisosHoy || 1;
+    // 5 s de tolerancia por si el cron se corre un poco.
+    const tocaRepetir = !primerAviso && s.repetir > 0 && avisosHoy < MAX_AVISOS_POR_DIA &&
+      ahora.getTime() - (s.ultimoAvisoMs || 0) >= s.repetir * 60 * 1000 - 5000;
+    if (!pendiente || !(primerAviso || tocaRepetir)) {
       vigentes.push(s);
       continue;
     }
     const status = await enviarPush(env.DATOS, env.CONTACTO, s.suscripcion, {
-      titulo: 'Recordatorio diario',
-      cuerpo: `Es hora de: ${s.accion}`,
+      titulo: avisosHoy ? `Recordatorio diario · aviso ${avisosHoy + 1}` : 'Recordatorio diario',
+      cuerpo: s.mensaje || `Es hora de: ${s.accion}`,
+      fecha,
     });
     cambios = true;
     // 404/410: el celular canceló la suscripción, se borra.
     if (status === 404 || status === 410) continue;
-    if (status >= 200 && status < 300) s.ultimoAviso = fecha;
+    if (status >= 200 && status < 300) {
+      s.ultimoAviso = fecha;
+      s.avisosHoy = avisosHoy + 1;
+      s.ultimoAvisoMs = ahora.getTime();
+    }
     vigentes.push(s);
   }
   if (cambios) await guardarSuscripciones(env.DATOS, vigentes);
@@ -113,6 +153,8 @@ function validar(d) {
   if (typeof d.hora !== 'string' || !/^([01]\d|2[0-3]):[0-5]\d$/.test(d.hora)) return 'Hora inválida';
   try { horaLocal(new Date(), d.zona); } catch { return 'Zona horaria inválida'; }
   if (d.ultimoHecho != null && !/^\d{4}-\d{2}-\d{2}$/.test(d.ultimoHecho)) return 'Fecha inválida';
+  if (d.mensaje != null && typeof d.mensaje !== 'string') return 'Mensaje inválido';
+  if (d.repetir != null && !REPETICIONES.includes(d.repetir)) return 'Repetición inválida';
   return null;
 }
 

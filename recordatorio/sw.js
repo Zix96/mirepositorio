@@ -1,6 +1,12 @@
-// Service worker: guarda la app para usarla sin conexión y maneja el clic en las notificaciones.
-const CACHE = 'recordatorio-v2';
-const ARCHIVOS = ['./', 'index.html', 'styles.css', 'app.js', 'icono.svg', 'manifest.webmanifest'];
+// Service worker: guarda la app para usarla sin conexión, muestra los avisos push
+// y atiende los toques en las notificaciones.
+importScripts('comun.js');
+
+const CACHE = 'recordatorio-v3';
+const ARCHIVOS = [
+  './', 'index.html', 'styles.css', 'comun.js', 'app.js', 'manifest.webmanifest',
+  'icono.svg', 'icono-192.png', 'icono-512.png', 'badge-96.png',
+];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(ARCHIVOS)));
@@ -10,7 +16,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((claves) =>
-      Promise.all(claves.filter((c) => c !== CACHE).map((c) => caches.delete(c)))
+      Promise.all(claves.filter((c) => c !== CACHE && c !== CACHE_DATOS).map((c) => caches.delete(c)))
     )
   );
   self.clients.claim();
@@ -35,17 +41,20 @@ self.addEventListener('push', (event) => {
   let datos = {};
   try { datos = event.data ? event.data.json() : {}; } catch (e) { /* mensaje sin formato */ }
   event.waitUntil(
-    self.registration.showNotification(datos.titulo || 'Recordatorio diario', {
-      body: datos.cuerpo || 'Es hora de tu acción de hoy',
-      icon: 'icono.svg',
-      tag: 'recordatorio-diario',
-      renotify: true,
-    })
+    self.registration.showNotification(
+      datos.titulo || 'Recordatorio diario',
+      opcionesNotificacion(datos.cuerpo || 'Es hora de tu acción de hoy', datos.fecha || claveFecha(new Date()))
+    )
   );
 });
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
+  if (event.action === 'hecho') {
+    const datos = event.notification.data || {};
+    event.waitUntil(marcarHecho(datos.fecha || claveFecha(new Date())));
+    return;
+  }
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((ventanas) => {
       if (ventanas.length) return ventanas[0].focus();
@@ -53,3 +62,24 @@ self.addEventListener('notificationclick', (event) => {
     })
   );
 });
+
+// Botón "✓ Hecho": lo deja anotado para la app y le avisa al servidor para que no insista.
+async function marcarHecho(fecha) {
+  const cache = await caches.open(CACHE_DATOS);
+  const previo = await cache.match(CLAVE_HECHOS);
+  const fechas = previo ? await previo.json() : [];
+  if (!fechas.includes(fecha)) fechas.push(fecha);
+  await cache.put(CLAVE_HECHOS, new Response(JSON.stringify(fechas)));
+
+  const suscripcion = await self.registration.pushManager.getSubscription();
+  if (suscripcion && SERVIDOR_PUSH) {
+    await fetch(`${SERVIDOR_PUSH}/hecho`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ endpoint: suscripcion.endpoint, fecha }),
+    }).catch(() => {});
+  }
+
+  const ventanas = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+  ventanas.forEach((v) => v.postMessage({ tipo: 'hecho' }));
+}

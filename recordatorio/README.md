@@ -7,9 +7,8 @@ App web sencilla para acordarte de hacer **la misma acción todos los días** y 
 - Botón grande para marcar "Hecho hoy" (y deshacer).
 - Racha actual, mejor racha y total de días.
 - Calendario de los últimos 28 días: tocá un día para corregirlo.
-- Aviso en pantalla y notificación si pasó la hora y todavía no lo hiciste.
-- Botón para descargar un evento diario `.ics` con alarma para Google Calendar / iPhone / Outlook,
-  que suena aunque la app esté cerrada.
+- Aviso en pantalla y notificación si pasó la hora y todavía no lo hiciste, con mensaje propio,
+  botón "✓ Hecho" para marcarlo sin abrir la app y repetición opcional (hasta 10 avisos por día).
 - Se puede instalar en el celular ("Agregar a pantalla de inicio") y funciona sin conexión.
 - Los datos se guardan solo en tu dispositivo (localStorage).
 

@@ -4,8 +4,9 @@ Servidor chico en **Cloudflare Workers** (plan gratuito) que manda la notificaci
 aunque la app esté cerrada:
 
 - Cada minuto revisa si ya pasó tu hora y todavía no marcaste "Hecho" hoy.
-- Si es así, te manda **una** notificación push (una por día).
-- La app le avisa cuando marcás "Hecho", así no te molesta.
+- Si es así, te manda una notificación push con tu mensaje, y la repite cada tanto
+  si lo elegiste en la app (hasta 10 por día).
+- La app le avisa cuando marcás "Hecho" (también desde el botón de la notificación), así no te molesta.
 
 Las claves de las notificaciones (VAPID) se crean solas la primera vez y quedan guardadas en Cloudflare.
 

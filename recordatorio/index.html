@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#4f46e5">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icono.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="icono.svg">
+  <link rel="apple-touch-icon" href="icono-192.png">
   <link rel="stylesheet" href="styles.css">
   <title>Recordatorio diario</title>
 </head>
@@ -62,6 +62,19 @@
         <label for="campo-hora">¿A qué hora te lo recuerdo?</label>
         <input id="campo-hora" type="time" required value="20:00">
 
+        <label for="campo-mensaje">Mensaje de la notificación (opcional)</label>
+        <input id="campo-mensaje" type="text" maxlength="120" placeholder="Es hora de: tu acción">
+
+        <label for="campo-repetir">Si no lo marco como hecho, volver a avisarme</label>
+        <select id="campo-repetir">
+          <option value="0">No, avisar una sola vez</option>
+          <option value="30">Cada 30 minutos</option>
+          <option value="60">Cada 1 hora</option>
+          <option value="120">Cada 2 horas</option>
+          <option value="180">Cada 3 horas</option>
+        </select>
+        <p class="ayuda">Hasta 10 avisos por día. Necesita los avisos con la app cerrada activados.</p>
+
         <button class="btn-principal" type="submit">Guardar</button>
         <button id="btn-cancelar" class="btn-secundario" type="button" hidden>Cancelar</button>
       </form>
@@ -74,12 +87,6 @@
           y abrila desde ese ícono.
         </p>
         <button id="btn-notificaciones" class="btn-secundario" type="button">Activar notificaciones</button>
-
-        <p class="ayuda">
-          <strong>Alarma en tu calendario (recomendado):</strong> agrega un evento diario con alarma
-          a Google Calendar, el calendario del iPhone u Outlook. Suena aunque la app esté cerrada.
-        </p>
-        <button id="btn-calendario" class="btn-secundario" type="button">Descargar evento diario (.ics)</button>
       </article>
 
       <article class="tarjeta">
@@ -90,6 +97,7 @@
     </section>
   </main>
 
+  <script src="comun.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
