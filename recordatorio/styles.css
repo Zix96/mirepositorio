@@ -220,6 +220,73 @@ button:focus-visible, input:focus-visible, select:focus-visible {
   font-weight: 600;
 }
 
+/* Logros */
+.proximo { margin-top: -4px; }
+
+.logros {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.logro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 10px 4px;
+  border-radius: 16px;
+  background: var(--vacio);
+  color: var(--suave);
+}
+
+.logro-emoji {
+  font-size: 1.8rem;
+  line-height: 1.2;
+  filter: grayscale(1);
+  opacity: 0.4;
+}
+
+.logro-nombre { font-size: 0.8rem; font-weight: 600; line-height: 1.2; margin-top: 2px; }
+.logro-detalle { font-size: 0.7rem; }
+
+.logro.ganado {
+  background: linear-gradient(160deg, var(--stat-1), var(--stat-2));
+  color: var(--texto);
+  box-shadow: 0 4px 12px rgba(232, 62, 140, 0.18);
+}
+
+.logro.ganado .logro-emoji { filter: none; opacity: 1; }
+
+.dialogo {
+  border: 0;
+  border-radius: 28px;
+  padding: 28px 24px 20px;
+  width: min(340px, calc(100% - 32px));
+  text-align: center;
+  background: var(--tarjeta);
+  color: var(--texto);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.dialogo::backdrop { background: rgba(43, 29, 58, 0.55); }
+
+.dialogo h2 {
+  background: linear-gradient(90deg, var(--rosa), var(--naranja));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.dialogo-emoji {
+  font-size: 4.5rem;
+  line-height: 1.1;
+  animation: salto 0.8s ease;
+}
+
 /* Festejo al marcar "Hecho" */
 .confeti {
   position: fixed;
@@ -253,7 +320,8 @@ button:focus-visible, input:focus-visible, select:focus-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .salto { animation: none; }
+  .salto,
+  .dialogo-emoji { animation: none; }
   button { transition: none; }
 }
 

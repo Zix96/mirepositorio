@@ -51,6 +51,12 @@
       </div>
 
       <article class="tarjeta">
+        <h3>🏅 Logros</h3>
+        <p id="proximo-logro" class="ayuda proximo"></p>
+        <ul id="logros" class="logros" aria-label="Medallas por días seguidos"></ul>
+      </article>
+
+      <article class="tarjeta">
         <h3>📅 Últimos 28 días</h3>
         <div id="calendario" class="calendario" aria-label="Historial de los últimos 28 días"></div>
         <p class="ayuda">Tocá un día para marcarlo o desmarcarlo si te olvidaste de registrarlo.</p>
@@ -102,6 +108,16 @@
       </article>
     </section>
   </main>
+
+  <dialog id="dialogo-logro" class="dialogo" aria-labelledby="logro-nombre">
+    <div id="logro-emoji" class="dialogo-emoji" aria-hidden="true"></div>
+    <p class="etiqueta">¡Logro desbloqueado!</p>
+    <h2 id="logro-nombre"></h2>
+    <p id="logro-texto"></p>
+    <form method="dialog">
+      <button class="btn-principal">¡Genial!</button>
+    </form>
+  </dialog>
 
   <script src="comun.js"></script>
   <script src="app.js"></script>

@@ -60,27 +60,113 @@ function mejorRacha() {
 
 // ---- Acciones ----
 
+// Devuelve true si con este cambio se ganó una medalla nueva (y ya la festejó).
 function alternarDia(dia) {
   if (estado.dias.includes(dia)) {
     estado.dias = estado.dias.filter((d) => d !== dia);
   } else {
     estado.dias.push(dia);
   }
+  const nuevos = actualizarLogros();
   guardar();
   dibujar();
   sincronizar();
+  if (nuevos.length) mostrarLogro(nuevos[nuevos.length - 1]);
+  return nuevos.length > 0;
+}
+
+// ---- Logros: medallas por días seguidos ----
+
+const LOGROS = [
+  { dias: 3, emoji: '🌱', nombre: 'Primer brote' },
+  { dias: 7, emoji: '🔥', nombre: 'Una semana' },
+  { dias: 14, emoji: '⚡', nombre: 'Dos semanas' },
+  { dias: 30, emoji: '🌟', nombre: 'Un mes' },
+  { dias: 60, emoji: '💎', nombre: 'Dos meses' },
+  { dias: 100, emoji: '💯', nombre: 'Cien días' },
+  { dias: 180, emoji: '🚀', nombre: 'Medio año' },
+  { dias: 365, emoji: '👑', nombre: 'Un año' },
+];
+
+// Para cada medalla, el primer día del historial en que una racha llegó a esa cantidad.
+function fechasDeLogros(dias) {
+  const fechas = {};
+  let racha = 0;
+  let anterior = null;
+  for (const dia of [...new Set(dias)].sort()) {
+    racha = anterior && claveFecha(sumarDias(new Date(anterior + 'T12:00:00'), 1)) === dia ? racha + 1 : 1;
+    const logro = LOGROS.find((l) => l.dias === racha);
+    if (logro && !fechas[logro.dias]) fechas[logro.dias] = dia;
+    anterior = dia;
+  }
+  return fechas;
+}
+
+// Suma al estado las medallas ganadas; una vez ganadas no se pierden aunque se corte la racha.
+// Devuelve las nuevas (vacío la primera vez, para no festejar medallas de antes de esta versión).
+function actualizarLogros() {
+  const primeraVez = !estado.logros;
+  estado.logros = estado.logros || {};
+  const nuevos = [];
+  for (const [dias, fecha] of Object.entries(fechasDeLogros(estado.dias))) {
+    if (!estado.logros[dias]) {
+      estado.logros[dias] = fecha;
+      nuevos.push(LOGROS.find((l) => l.dias === Number(dias)));
+    }
+  }
+  return primeraVez ? [] : nuevos;
+}
+
+function mostrarLogro(logro) {
+  $('logro-emoji').textContent = logro.emoji;
+  $('logro-nombre').textContent = logro.nombre;
+  $('logro-texto').textContent = `Llegaste a ${logro.dias} días seguidos. ¡Seguí así!`;
+  const dialogo = $('dialogo-logro');
+  if (typeof dialogo.showModal === 'function' && !dialogo.open) dialogo.showModal();
+  festejar(110);
+}
+
+function dibujarLogros() {
+  const racha = rachaActual();
+  const formato = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short', year: 'numeric' });
+  const lista = $('logros');
+  lista.innerHTML = '';
+  for (const logro of LOGROS) {
+    const fecha = estado.logros && estado.logros[logro.dias];
+    const faltan = logro.dias - racha;
+    const item = document.createElement('li');
+    item.className = 'logro' + (fecha ? ' ganado' : '');
+    item.innerHTML = '<span class="logro-emoji" aria-hidden="true"></span>' +
+      '<span class="logro-nombre"></span><span class="logro-detalle"></span>';
+    item.querySelector('.logro-emoji').textContent = logro.emoji;
+    item.querySelector('.logro-nombre').textContent = logro.nombre;
+    item.querySelector('.logro-detalle').textContent = fecha
+      ? formato.format(new Date(fecha + 'T12:00:00'))
+      : `faltan ${faltan} ${faltan === 1 ? 'día' : 'días'}`;
+    item.title = `${logro.nombre}: ${logro.dias} días seguidos` + (fecha ? ' — ganada' : '');
+    lista.appendChild(item);
+  }
+
+  const proximo = LOGROS.find((l) => !(estado.logros && estado.logros[l.dias]));
+  if (proximo) {
+    const faltan = proximo.dias - racha;
+    $('proximo-logro').textContent =
+      `Próxima medalla: ${proximo.emoji} ${proximo.nombre} — ${faltan === 1 ? 'falta 1 día' : `faltan ${faltan} días`}`;
+  } else {
+    $('proximo-logro').textContent = '¡Ganaste todas las medallas! 👑';
+  }
 }
 
 // ---- Festejo ----
 
 const COLORES_CONFETI = ['#e83e8c', '#f26b38', '#ffc93c', '#0f9d8a', '#7c5cff', '#3fa9f5'];
 
-function festejar() {
+function festejar(cantidad = 60) {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const capa = document.createElement('div');
   capa.className = 'confeti';
   capa.setAttribute('aria-hidden', 'true');
-  for (let i = 0; i < 60; i++) {
+  for (let i = 0; i < cantidad; i++) {
     const pieza = document.createElement('span');
     pieza.style.setProperty('--x', `${Math.random() * 100}%`);
     pieza.style.setProperty('--c', COLORES_CONFETI[i % COLORES_CONFETI.length]);
@@ -90,7 +176,9 @@ function festejar() {
     pieza.style.setProperty('--giro', `${(Math.random() - 0.5) * 1440}deg`);
     capa.appendChild(pieza);
   }
-  document.body.appendChild(capa);
+  // Con la tarjeta de medalla abierta, el confeti va adentro para quedar por encima de ella.
+  const dialogo = $('dialogo-logro');
+  (dialogo.open ? dialogo : document.body).appendChild(capa);
   setTimeout(() => capa.remove(), 3200);
 
   const racha = $('racha-actual');
@@ -146,6 +234,7 @@ function dibujar() {
     calendario.appendChild(celda);
   }
 
+  dibujarLogros();
   revisarRecordatorio();
 }
 
@@ -192,8 +281,11 @@ async function aplicarHechosPendientes() {
     const nuevas = fechas.filter((f) => !estado.dias.includes(f));
     if (!nuevas.length) return;
     estado.dias.push(...nuevas);
+    const logros = actualizarLogros();
     guardar();
-    if (estado.accion) dibujar();
+    if (!estado.accion) return;
+    dibujar();
+    if (logros.length) mostrarLogro(logros[logros.length - 1]);
   } catch (e) { /* sin acceso al almacenamiento: no hay nada para anotar */ }
 }
 
@@ -290,8 +382,8 @@ function actualizarBotonNotificaciones() {
 // ---- Eventos ----
 
 $('btn-hecho').addEventListener('click', () => {
-  alternarDia(hoy());
-  if (hechoHoy()) festejar();
+  const medalla = alternarDia(hoy());
+  if (hechoHoy() && !medalla) festejar();
 });
 $('btn-ajustes').addEventListener('click', () => mostrarVista('ajustes'));
 $('btn-cancelar').addEventListener('click', () => mostrarVista('principal'));
@@ -324,8 +416,9 @@ $('btn-notificaciones').addEventListener('click', async () => {
 $('campo-accion').addEventListener('input', actualizarEjemploMensaje);
 
 $('btn-borrar').addEventListener('click', () => {
-  if (confirm('¿Borrar todos los días registrados? Esto no se puede deshacer.')) {
+  if (confirm('¿Borrar todos los días registrados y las medallas? Esto no se puede deshacer.')) {
     estado.dias = [];
+    estado.logros = {};
     guardar();
     dibujar();
     sincronizar();
@@ -351,6 +444,8 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
 // ---- Inicio ----
 
 if (estado.accion) {
+  actualizarLogros();
+  guardar();
   mostrarVista('principal');
   dibujar();
   // Primero anotar lo marcado desde la notificación, para no mandarle al servidor un día viejo.
