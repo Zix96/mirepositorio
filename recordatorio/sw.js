@@ -2,7 +2,7 @@
 // y atiende los toques en las notificaciones.
 importScripts('comun.js');
 
-const CACHE = 'recordatorio-v3';
+const CACHE = 'recordatorio-v4';
 const ARCHIVOS = [
   './', 'index.html', 'styles.css', 'comun.js', 'app.js', 'manifest.webmanifest',
   'icono.svg', 'icono-192.png', 'icono-512.png', 'badge-96.png',

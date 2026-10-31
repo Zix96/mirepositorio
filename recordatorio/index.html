@@ -4,10 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Recordatorio diario para hacer la misma acción todos los días y mantener la racha.">
-  <meta name="theme-color" content="#4f46e5">
+  <meta name="theme-color" content="#e83e8c">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icono.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icono-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <title>Recordatorio diario</title>
 </head>
@@ -31,21 +34,24 @@
 
       <div class="estadisticas">
         <div class="stat">
+          <span class="emoji" aria-hidden="true">🔥</span>
           <span id="racha-actual" class="numero">0</span>
           <span class="etiqueta">días seguidos</span>
         </div>
         <div class="stat">
+          <span class="emoji" aria-hidden="true">🏆</span>
           <span id="racha-mejor" class="numero">0</span>
           <span class="etiqueta">mejor racha</span>
         </div>
         <div class="stat">
+          <span class="emoji" aria-hidden="true">✅</span>
           <span id="total" class="numero">0</span>
           <span class="etiqueta">días en total</span>
         </div>
       </div>
 
       <article class="tarjeta">
-        <h3>Últimos 28 días</h3>
+        <h3>📅 Últimos 28 días</h3>
         <div id="calendario" class="calendario" aria-label="Historial de los últimos 28 días"></div>
         <p class="ayuda">Tocá un día para marcarlo o desmarcarlo si te olvidaste de registrarlo.</p>
       </article>
@@ -80,7 +86,7 @@
       </form>
 
       <article class="tarjeta">
-        <h3>Avisos</h3>
+        <h3>🔔 Avisos</h3>
         <p class="ayuda">
           <strong>Notificaciones:</strong> te avisan a la hora elegida si todavía no marcaste "Hecho",
           aunque la app esté cerrada. En iPhone primero instalala con Compartir → "Agregar a inicio"
@@ -90,7 +96,7 @@
       </article>
 
       <article class="tarjeta">
-        <h3>Datos</h3>
+        <h3>💾 Datos</h3>
         <p class="ayuda">Todo se guarda solo en este dispositivo.</p>
         <button id="btn-borrar" class="btn-peligro" type="button">Borrar historial</button>
       </article>

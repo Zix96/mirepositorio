@@ -71,6 +71,34 @@ function alternarDia(dia) {
   sincronizar();
 }
 
+// ---- Festejo ----
+
+const COLORES_CONFETI = ['#e83e8c', '#f26b38', '#ffc93c', '#0f9d8a', '#7c5cff', '#3fa9f5'];
+
+function festejar() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const capa = document.createElement('div');
+  capa.className = 'confeti';
+  capa.setAttribute('aria-hidden', 'true');
+  for (let i = 0; i < 60; i++) {
+    const pieza = document.createElement('span');
+    pieza.style.setProperty('--x', `${Math.random() * 100}%`);
+    pieza.style.setProperty('--c', COLORES_CONFETI[i % COLORES_CONFETI.length]);
+    pieza.style.setProperty('--d', `${1.4 + Math.random() * 1.2}s`);
+    pieza.style.setProperty('--r', `${Math.random() * 0.4}s`);
+    pieza.style.setProperty('--dx', `${(Math.random() - 0.5) * 160}px`);
+    pieza.style.setProperty('--giro', `${(Math.random() - 0.5) * 1440}deg`);
+    capa.appendChild(pieza);
+  }
+  document.body.appendChild(capa);
+  setTimeout(() => capa.remove(), 3200);
+
+  const racha = $('racha-actual');
+  racha.classList.remove('salto');
+  void racha.offsetWidth; // reinicia la animación si se repite
+  racha.classList.add('salto');
+}
+
 // ---- Interfaz ----
 
 function mostrarVista(vista) {
@@ -94,7 +122,7 @@ function dibujar() {
   $('texto-hora').textContent = estado.hora;
 
   const boton = $('btn-hecho');
-  boton.textContent = hechoHoy() ? '✓ ¡Hecho hoy! (tocar para deshacer)' : 'Marcar como hecho hoy';
+  boton.textContent = hechoHoy() ? '🎉 ¡Hecho hoy! (tocar para deshacer)' : '👉 Marcar como hecho hoy';
   boton.classList.toggle('hecho', hechoHoy());
 
   $('racha-actual').textContent = rachaActual();
@@ -261,7 +289,10 @@ function actualizarBotonNotificaciones() {
 
 // ---- Eventos ----
 
-$('btn-hecho').addEventListener('click', () => alternarDia(hoy()));
+$('btn-hecho').addEventListener('click', () => {
+  alternarDia(hoy());
+  if (hechoHoy()) festejar();
+});
 $('btn-ajustes').addEventListener('click', () => mostrarVista('ajustes'));
 $('btn-cancelar').addEventListener('click', () => mostrarVista('principal'));
 
