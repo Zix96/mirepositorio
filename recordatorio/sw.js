@@ -2,7 +2,7 @@
 // y atiende los toques en las notificaciones.
 importScripts('comun.js');
 
-const CACHE = 'recordatorio-v5';
+const CACHE = 'recordatorio-v6';
 const ARCHIVOS = [
   './', 'index.html', 'styles.css', 'comun.js', 'app.js', 'manifest.webmanifest',
   'icono.svg', 'icono-192.png', 'icono-512.png', 'badge-96.png',
@@ -23,10 +23,14 @@ self.addEventListener('activate', (event) => {
 });
 
 // Primero la red (para recibir actualizaciones); si no hay conexión, la copia guardada.
+// 'no-cache' le pregunta siempre al servidor si hay versión nueva, para no mezclar
+// una página nueva con un app.js viejo guardado por el navegador.
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET' || new URL(event.request.url).origin !== location.origin) return;
+  // Las navegaciones se piden por URL: una petición de navegación no admite cambiar opciones.
+  const peticion = event.request.mode === 'navigate' ? event.request.url : event.request;
   event.respondWith(
-    fetch(event.request)
+    fetch(peticion, { cache: 'no-cache' })
       .then((respuesta) => {
         const copia = respuesta.clone();
         caches.open(CACHE).then((cache) => cache.put(event.request, copia));
