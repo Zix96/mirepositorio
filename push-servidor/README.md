@@ -3,9 +3,10 @@
 Servidor chico en **Cloudflare Workers** (plan gratuito) que manda la notificación al celular
 aunque la app esté cerrada:
 
-- Cada minuto revisa si ya pasó tu hora y todavía no marcaste "Hecho" hoy.
-- Si es así, te manda una notificación push con tu mensaje, y la repite cada tanto
-  si lo elegiste en la app (hasta 10 por día).
+- Cada minuto revisa, para cada acción, si hoy toca, ya pasó su hora y todavía no la cumpliste
+  en su período (el día, el mes o el tramo de n días). Usa `recordatorio/frecuencia.js`, igual que la app.
+- Si es así, te manda una notificación push con el nombre de la acción y tu mensaje, y la repite
+  cada tanto si lo elegiste en la app (hasta 10 por día).
 - La app le avisa cuando marcás "Hecho" (también desde el botón de la notificación), así no te molesta.
 
 Las claves de las notificaciones (VAPID) se crean solas la primera vez y quedan guardadas en Cloudflare.

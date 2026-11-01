@@ -2,9 +2,9 @@
 // y atiende los toques en las notificaciones.
 importScripts('comun.js');
 
-const CACHE = 'recordatorio-v6';
+const CACHE = 'recordatorio-v7';
 const ARCHIVOS = [
-  './', 'index.html', 'styles.css', 'comun.js', 'app.js', 'manifest.webmanifest',
+  './', 'index.html', 'styles.css', 'comun.js', 'frecuencia.js', 'app.js', 'manifest.webmanifest',
   'icono.svg', 'icono-192.png', 'icono-512.png', 'badge-96.png',
 ];
 
@@ -46,8 +46,13 @@ self.addEventListener('push', (event) => {
   try { datos = event.data ? event.data.json() : {}; } catch (e) { /* mensaje sin formato */ }
   event.waitUntil(
     self.registration.showNotification(
-      datos.titulo || 'Recordatorio diario',
-      opcionesNotificacion(datos.cuerpo || 'Es hora de tu acción de hoy', datos.fecha || claveFecha(new Date()))
+      datos.titulo || 'Recordatorio',
+      opcionesNotificacion(
+        datos.cuerpo || 'Es hora de tu acción de hoy',
+        datos.fecha || claveFecha(new Date()),
+        // El servidor de antes no mandaba la acción: era siempre la única.
+        datos.accion || 'principal'
+      )
     )
   );
 });
@@ -56,7 +61,7 @@ self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   if (event.action === 'hecho') {
     const datos = event.notification.data || {};
-    event.waitUntil(marcarHecho(datos.fecha || claveFecha(new Date())));
+    event.waitUntil(marcarHecho(datos.accion || 'principal', datos.fecha || claveFecha(new Date())));
     return;
   }
   event.waitUntil(
@@ -68,19 +73,19 @@ self.addEventListener('notificationclick', (event) => {
 });
 
 // Botón "✓ Hecho": lo deja anotado para la app y le avisa al servidor para que no insista.
-async function marcarHecho(fecha) {
+async function marcarHecho(accion, fecha) {
   const cache = await caches.open(CACHE_DATOS);
   const previo = await cache.match(CLAVE_HECHOS);
-  const fechas = previo ? await previo.json() : [];
-  if (!fechas.includes(fecha)) fechas.push(fecha);
-  await cache.put(CLAVE_HECHOS, new Response(JSON.stringify(fechas)));
+  const marcas = previo ? await previo.json() : [];
+  if (!marcas.some((m) => m.accion === accion && m.fecha === fecha)) marcas.push({ accion, fecha });
+  await cache.put(CLAVE_HECHOS, new Response(JSON.stringify(marcas)));
 
   const suscripcion = await self.registration.pushManager.getSubscription();
   if (suscripcion && SERVIDOR_PUSH) {
     await fetch(`${SERVIDOR_PUSH}/hecho`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ endpoint: suscripcion.endpoint, fecha }),
+      body: JSON.stringify({ endpoint: suscripcion.endpoint, accion, fecha }),
     }).catch(() => {});
   }
 

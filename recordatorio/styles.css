@@ -67,9 +67,11 @@ body {
 .encabezado {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 10px;
   margin-bottom: 12px;
 }
+
+.encabezado h1 { flex: 1; }
 
 h1 {
   font-size: 1.5rem;
@@ -209,6 +211,7 @@ button:focus-visible, input:focus-visible, select:focus-visible {
 }
 
 .dia.hecho { background: var(--primario); color: #fff; font-weight: 700; }
+.dia.no-toca:not(.hecho) { opacity: 0.45; }
 .dia.hoy { outline: 3px solid var(--violeta); outline-offset: 1px; }
 
 .aviso {
@@ -219,6 +222,108 @@ button:focus-visible, input:focus-visible, select:focus-visible {
   margin-bottom: 16px;
   font-weight: 600;
 }
+
+/* Lista de acciones */
+.lista-acciones {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.item-accion {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+}
+
+.item-cuerpo {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border-radius: 12px;
+  background: none;
+  color: inherit;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+}
+
+.item-nombre { font-size: 1.25rem; font-weight: 700; overflow-wrap: anywhere; }
+.item-detalle, .item-estado { color: var(--suave); font-size: 0.9rem; }
+.item-accion.hecha .item-estado { color: var(--turquesa); font-weight: 600; }
+.item-racha { margin-top: 4px; font-weight: 600; color: var(--rosa); }
+.item-numero { display: inline-block; }
+
+.item-marcar {
+  flex: none;
+  width: 56px;
+  height: 56px;
+  margin: 0;
+  padding: 0;
+  border: 3px solid var(--rosa);
+  background: transparent;
+  color: #fff;
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.item-marcar.hecho {
+  border-color: transparent;
+  background: var(--exito);
+  box-shadow: 0 6px 16px rgba(15, 157, 138, 0.35);
+}
+
+.agregar { margin-top: 0; }
+
+/* Editor */
+.dias-semana {
+  border: 0;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.dias-semana legend { font-weight: 600; margin-bottom: 6px; padding: 0; }
+
+.chip input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.chip span {
+  display: inline-block;
+  min-width: 48px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 2px solid var(--borde);
+  background: var(--vacio);
+  text-align: center;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chip { position: relative; margin: 0; }
+.chip input:checked + span { background: var(--primario); border-color: transparent; color: #fff; }
+.chip input:focus-visible + span { outline: 3px solid var(--foco); outline-offset: 2px; }
+
+.opciones-cada {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 10px;
+}
+
+.botones-detalle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.botones-detalle button { margin-top: 0; }
 
 /* Logros */
 .proximo { margin-top: -4px; }

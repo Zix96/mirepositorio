@@ -1,14 +1,18 @@
 # Recordatorio diario
 
-App web sencilla para acordarte de hacer **la misma acción todos los días** y llevar tu racha.
+App web para acordarte de tus acciones (tomar la pastilla, ir al gimnasio, cambiar un filtro…)
+y llevar la racha de cada una.
 
 ## Qué hace
-- Elegís la acción (ej. "Tomar la pastilla") y la hora del recordatorio.
-- Botón grande para marcar "Hecho hoy" (y deshacer).
-- Racha actual, mejor racha y total de días.
-- Calendario de los últimos 28 días: tocá un día para corregirlo.
-- Aviso en pantalla y notificación si pasó la hora y todavía no lo hiciste, con mensaje propio,
-  botón "✓ Hecho" para marcarlo sin abrir la app y repetición opcional (hasta 10 avisos por día).
+- Varias acciones, cada una con su hora y su frecuencia: todos los días, algunos días de la
+  semana, una vez por mes (cualquier día) o cada cierta cantidad de días desde una fecha.
+- Lista con el estado de hoy de cada acción y un botón para marcarla (y deshacer).
+- Por acción: racha (días, veces o meses seguidos), mejor racha, total, medallas y calendario
+  de los últimos 28 días (tocá un día para corregirlo).
+- Aviso en pantalla y notificación por acción si pasó la hora y todavía no la hiciste, con mensaje
+  propio, botón "✓ Hecho" para marcarla sin abrir la app y repetición opcional (hasta 10 por día).
+- Qué días toca cada acción y cómo se cuentan las rachas está en `frecuencia.js`, que también usa
+  el servidor push.
 - Se puede instalar en el celular ("Agregar a pantalla de inicio") y funciona sin conexión.
 - Los datos se guardan solo en tu dispositivo (localStorage).
 

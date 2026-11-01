@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Recordatorio diario para hacer la misma acción todos los días y mantener la racha.">
+  <meta name="description" content="Recordatorios para tus acciones diarias, semanales, mensuales o cada cierta cantidad de días, con rachas y logros.">
   <meta name="theme-color" content="#e83e8c">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icono.svg" type="image/svg+xml">
@@ -17,18 +17,24 @@
 <body>
   <main class="app">
     <header class="encabezado">
-      <h1>Recordatorio diario</h1>
+      <button id="btn-volver" class="btn-icono" type="button" aria-label="Volver" title="Volver" hidden>←</button>
+      <h1 id="titulo">Mis recordatorios</h1>
       <button id="btn-ajustes" class="btn-icono" type="button" aria-label="Ajustes" title="Ajustes">⚙</button>
     </header>
 
-    <!-- Pantalla principal -->
-    <section id="vista-principal" hidden>
+    <!-- Lista de acciones -->
+    <section id="vista-lista" hidden>
       <div id="aviso" class="aviso" role="status" hidden></div>
+      <ul id="lista-acciones" class="lista-acciones" aria-label="Tus acciones"></ul>
+      <button id="btn-agregar" class="btn-secundario agregar" type="button">＋ Agregar acción</button>
+    </section>
 
+    <!-- Detalle de una acción -->
+    <section id="vista-detalle" hidden>
       <article class="tarjeta hoy">
-        <p class="etiqueta">Tu acción de cada día</p>
+        <p id="detalle-frecuencia" class="etiqueta"></p>
         <h2 id="texto-accion"></h2>
-        <p class="hora">Recordatorio a las <strong id="texto-hora"></strong></p>
+        <p id="texto-hora" class="hora"></p>
         <button id="btn-hecho" class="btn-principal" type="button"></button>
       </article>
 
@@ -36,7 +42,7 @@
         <div class="stat">
           <span class="emoji" aria-hidden="true">🔥</span>
           <span id="racha-actual" class="numero">0</span>
-          <span class="etiqueta">días seguidos</span>
+          <span id="etiqueta-racha" class="etiqueta">días seguidos</span>
         </div>
         <div class="stat">
           <span class="emoji" aria-hidden="true">🏆</span>
@@ -46,30 +52,67 @@
         <div class="stat">
           <span class="emoji" aria-hidden="true">✅</span>
           <span id="total" class="numero">0</span>
-          <span class="etiqueta">días en total</span>
+          <span id="etiqueta-total" class="etiqueta">días en total</span>
         </div>
       </div>
 
       <article class="tarjeta">
         <h3>🏅 Logros</h3>
         <p id="proximo-logro" class="ayuda proximo"></p>
-        <ul id="logros" class="logros" aria-label="Medallas por días seguidos"></ul>
+        <ul id="logros" class="logros" aria-label="Medallas"></ul>
       </article>
 
       <article class="tarjeta">
         <h3>📅 Últimos 28 días</h3>
         <div id="calendario" class="calendario" aria-label="Historial de los últimos 28 días"></div>
-        <p class="ayuda">Tocá un día para marcarlo o desmarcarlo si te olvidaste de registrarlo.</p>
+        <p class="ayuda">Tocá un día para marcarlo o desmarcarlo si te olvidaste de registrarlo. Los días más claros son los que no toca.</p>
       </article>
+
+      <div class="botones-detalle">
+        <button id="btn-editar" class="btn-secundario" type="button">✏️ Editar</button>
+        <button id="btn-eliminar" class="btn-peligro" type="button">🗑️ Borrar acción</button>
+      </div>
     </section>
 
-    <!-- Configuración -->
-    <section id="vista-ajustes" hidden>
-      <form id="form-ajustes" class="tarjeta">
-        <h2 id="titulo-ajustes">Configurá tu recordatorio</h2>
+    <!-- Crear o editar una acción -->
+    <section id="vista-editor" hidden>
+      <form id="form-accion" class="tarjeta">
+        <h2 id="titulo-editor">Nueva acción</h2>
 
-        <label for="campo-accion">¿Qué querés hacer todos los días?</label>
-        <input id="campo-accion" type="text" maxlength="80" required placeholder="Ej: Tomar la pastilla, leer 10 páginas…">
+        <label for="campo-accion">¿Qué querés hacer?</label>
+        <input id="campo-accion" type="text" maxlength="80" required placeholder="Ej: Tomar la pastilla, ir al gimnasio…">
+
+        <label for="campo-frecuencia">¿Cada cuánto?</label>
+        <select id="campo-frecuencia">
+          <option value="diaria">Todos los días</option>
+          <option value="semanal">Algunos días de la semana</option>
+          <option value="mensual">Una vez por mes</option>
+          <option value="cada">Cada cierta cantidad de días</option>
+        </select>
+
+        <fieldset id="opciones-semanal" class="dias-semana" hidden>
+          <legend>¿Qué días?</legend>
+          <label class="chip"><input type="checkbox" value="1"><span>Lun</span></label>
+          <label class="chip"><input type="checkbox" value="2"><span>Mar</span></label>
+          <label class="chip"><input type="checkbox" value="3"><span>Mié</span></label>
+          <label class="chip"><input type="checkbox" value="4"><span>Jue</span></label>
+          <label class="chip"><input type="checkbox" value="5"><span>Vie</span></label>
+          <label class="chip"><input type="checkbox" value="6"><span>Sáb</span></label>
+          <label class="chip"><input type="checkbox" value="0"><span>Dom</span></label>
+        </fieldset>
+
+        <div id="opciones-cada" class="opciones-cada" hidden>
+          <div>
+            <label for="campo-n">Cada cuántos días</label>
+            <input id="campo-n" type="number" min="2" max="60" value="3" inputmode="numeric">
+          </div>
+          <div>
+            <label for="campo-inicio">Empezando el</label>
+            <input id="campo-inicio" type="date">
+          </div>
+        </div>
+
+        <p id="ayuda-frecuencia" class="ayuda" hidden></p>
 
         <label for="campo-hora">¿A qué hora te lo recuerdo?</label>
         <input id="campo-hora" type="time" required value="20:00">
@@ -88,13 +131,16 @@
         <p class="ayuda">Hasta 10 avisos por día. Necesita los avisos con la app cerrada activados.</p>
 
         <button class="btn-principal" type="submit">Guardar</button>
-        <button id="btn-cancelar" class="btn-secundario" type="button" hidden>Cancelar</button>
+        <button id="btn-cancelar" class="btn-secundario" type="button">Cancelar</button>
       </form>
+    </section>
 
+    <!-- Ajustes generales -->
+    <section id="vista-ajustes" hidden>
       <article class="tarjeta">
         <h3>🔔 Avisos</h3>
         <p class="ayuda">
-          <strong>Notificaciones:</strong> te avisan a la hora elegida si todavía no marcaste "Hecho",
+          <strong>Notificaciones:</strong> te avisan de cada acción a su hora si todavía no la marcaste,
           aunque la app esté cerrada. En iPhone primero instalala con Compartir → "Agregar a inicio"
           y abrila desde ese ícono.
         </p>
@@ -104,7 +150,7 @@
       <article class="tarjeta">
         <h3>💾 Datos</h3>
         <p class="ayuda">Todo se guarda solo en este dispositivo.</p>
-        <button id="btn-borrar" class="btn-peligro" type="button">Borrar historial</button>
+        <button id="btn-borrar" class="btn-peligro" type="button">Borrar el historial de todas las acciones</button>
       </article>
     </section>
   </main>
@@ -120,6 +166,7 @@
   </dialog>
 
   <script src="comun.js"></script>
+  <script src="frecuencia.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

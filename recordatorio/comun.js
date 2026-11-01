@@ -4,7 +4,8 @@
 // Vacía = solo avisos con la app abierta.
 const SERVIDOR_PUSH = 'https://recordatorio-push.botfrancis.workers.dev';
 
-// Días marcados con el botón "✓ Hecho" de la notificación que la app todavía no anotó.
+// Marcas hechas con el botón "✓ Hecho" de la notificación que la app todavía no anotó
+// (lista de { accion, fecha }).
 const CACHE_DATOS = 'recordatorio-datos';
 const CLAVE_HECHOS = '/__recordatorio/hechos-pendientes';
 
@@ -15,14 +16,15 @@ function claveFecha(fecha) {
   return `${a}-${m}-${d}`;
 }
 
-function opcionesNotificacion(cuerpo, fecha) {
+// Cada acción usa su propia etiqueta, así sus avisos no se reemplazan entre sí.
+function opcionesNotificacion(cuerpo, fecha, accion) {
   return {
     body: cuerpo,
     icon: 'icono-192.png',
     badge: 'badge-96.png',
-    tag: 'recordatorio-diario',
+    tag: `recordatorio-${accion}`,
     renotify: true,
-    data: { fecha },
+    data: { fecha, accion },
     actions: [{ action: 'hecho', title: '✓ Hecho' }],
   };
 }

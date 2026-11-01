@@ -6,6 +6,7 @@ on:
   push:
     paths:
       - 'push-servidor/**'
+      - 'recordatorio/frecuencia.js'
       - '.github/workflows/desplegar-push.yml'
   workflow_dispatch:
 

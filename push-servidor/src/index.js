@@ -1,20 +1,26 @@
-// Servidor push del Recordatorio diario.
+// Servidor push de la app de recordatorios.
 //
 // GET  /clave-publica  -> clave pública VAPID para suscribirse a las notificaciones.
-// POST /sincronizar    -> la app guarda su suscripción, acción, mensaje, hora, zona horaria,
-//                         cada cuánto repetir el aviso y el último día hecho.
-// POST /hecho          -> el botón "✓ Hecho" de la notificación marca el día sin abrir la app.
-// Cron cada minuto     -> manda la notificación a quien ya pasó su hora y no marcó "Hecho" hoy,
-//                         y la repite cada tanto si así lo eligió.
+// POST /sincronizar    -> la app guarda su suscripción, zona horaria y la lista de acciones
+//                         (nombre, mensaje, hora, frecuencia, cada cuánto repetir y días hechos).
+// POST /hecho          -> el botón "✓ Hecho" de la notificación marca una acción sin abrir la app.
+// Cron cada minuto     -> avisa de cada acción que toca hoy, ya pasó su hora y todavía no se
+//                         cumplió en su período (día, mes o cada n días), y repite si así se eligió.
 //
 // Las claves VAPID se generan solas la primera vez y quedan guardadas en KV:
 // la clave privada nunca sale de Cloudflare.
 
 import { claveVapid, enviarPush } from './push.js';
+import frecuencias from '../../recordatorio/frecuencia.js';
+
+const { periodoDe, cumplidoEn, validarFrecuencia } = frecuencias;
 
 const MAX_SUSCRIPCIONES = 20;
+const MAX_ACCIONES = 20;
+const MAX_HECHOS = 100; // alcanza para el período más largo (60 días)
 const MAX_AVISOS_POR_DIA = 10;
 const REPETICIONES = [0, 30, 60, 120, 180]; // minutos; 0 = no repetir
+const FECHA = /^\d{4}-\d{2}-\d{2}$/;
 
 export default {
   async fetch(request, env) {
@@ -48,22 +54,30 @@ export default {
           endpoint: datos.suscripcion.endpoint,
           keys: { p256dh: datos.suscripcion.keys.p256dh, auth: datos.suscripcion.keys.auth },
         },
-        accion: datos.accion.slice(0, 80),
-        mensaje: (datos.mensaje || '').trim().slice(0, 120),
-        hora: datos.hora,
         zona: datos.zona,
-        repetir: datos.repetir || 0,
-        ultimoHecho: datos.ultimoHecho || null,
-        ultimoAviso: null,
-        avisosHoy: 0,
-        ultimoAvisoMs: 0,
+        acciones: accionesRecibidas(datos).map((a) => {
+          const nueva = {
+            id: a.id,
+            nombre: a.nombre.trim().slice(0, 80),
+            mensaje: (a.mensaje || '').trim().slice(0, 120),
+            hora: a.hora,
+            repetir: a.repetir || 0,
+            frecuencia: a.frecuencia,
+            hechos: recortarHechos(a.hechos),
+            ultimoAviso: null,
+            avisosHoy: 0,
+            ultimoAvisoMs: 0,
+          };
+          // Si no cambió la hora, se conserva el registro de avisos de hoy; si cambió, se puede volver a avisar.
+          const previa = anterior && anterior.acciones.find((x) => x.id === a.id);
+          if (previa && previa.hora === a.hora) {
+            nueva.ultimoAviso = previa.ultimoAviso;
+            nueva.avisosHoy = previa.avisosHoy || (previa.ultimoAviso ? 1 : 0);
+            nueva.ultimoAvisoMs = previa.ultimoAvisoMs || 0;
+          }
+          return nueva;
+        }),
       };
-      // Si no cambió la hora, se conserva el registro de avisos de hoy; si cambió, se puede volver a avisar.
-      if (anterior && anterior.hora === datos.hora) {
-        nueva.ultimoAviso = anterior.ultimoAviso;
-        nueva.avisosHoy = anterior.avisosHoy || (anterior.ultimoAviso ? 1 : 0);
-        nueva.ultimoAvisoMs = anterior.ultimoAvisoMs || 0;
-      }
       const resto = lista.filter((s) => s !== anterior);
       if (!anterior && resto.length >= MAX_SUSCRIPCIONES) return responder({ error: 'Límite de dispositivos' }, 429);
       await guardarSuscripciones(env.DATOS, [...resto, nueva]);
@@ -73,14 +87,17 @@ export default {
     if (request.method === 'POST' && pathname === '/hecho') {
       let datos;
       try { datos = await request.json(); } catch { return responder({ error: 'JSON inválido' }, 400); }
-      if (!datos || typeof datos.endpoint !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(datos.fecha || '')) {
+      if (!datos || typeof datos.endpoint !== 'string' || !FECHA.test(datos.fecha || '')) {
         return responder({ error: 'Datos inválidos' }, 400);
       }
       const lista = await leerSuscripciones(env.DATOS);
       const s = lista.find((x) => x.suscripcion.endpoint === datos.endpoint);
       if (!s) return responder({ error: 'Suscripción desconocida' }, 404);
-      if (!s.ultimoHecho || datos.fecha > s.ultimoHecho) {
-        s.ultimoHecho = datos.fecha;
+      // Las notificaciones de antes de tener varias acciones no dicen cuál: es la primera.
+      const accion = datos.accion ? s.acciones.find((a) => a.id === datos.accion) : s.acciones[0];
+      if (!accion) return responder({ error: 'Acción desconocida' }, 404);
+      if (!accion.hechos.includes(datos.fecha)) {
+        accion.hechos = recortarHechos([...accion.hechos, datos.fecha]);
         await guardarSuscripciones(env.DATOS, lista);
       }
       return responder({ ok: true });
@@ -102,31 +119,37 @@ export async function revisar(env, ahora) {
   const vigentes = [];
   for (const s of lista) {
     const { fecha, minutos } = horaLocal(ahora, s.zona);
-    const [h, m] = s.hora.split(':').map(Number);
-    const pendiente = minutos >= h * 60 + m && s.ultimoHecho !== fecha;
-    const primerAviso = s.ultimoAviso !== fecha;
-    const avisosHoy = primerAviso ? 0 : s.avisosHoy || 1;
-    // 5 s de tolerancia por si el cron se corre un poco.
-    const tocaRepetir = !primerAviso && s.repetir > 0 && avisosHoy < MAX_AVISOS_POR_DIA &&
-      ahora.getTime() - (s.ultimoAvisoMs || 0) >= s.repetir * 60 * 1000 - 5000;
-    if (!pendiente || !(primerAviso || tocaRepetir)) {
-      vigentes.push(s);
-      continue;
+    let vencida = false;
+    for (const a of s.acciones) {
+      const periodo = periodoDe(a.frecuencia, fecha);
+      const [h, m] = a.hora.split(':').map(Number);
+      const pendiente = periodo && !cumplidoEn(periodo, a.hechos) && minutos >= h * 60 + m;
+      const primerAviso = a.ultimoAviso !== fecha;
+      const avisosHoy = primerAviso ? 0 : a.avisosHoy || 1;
+      // 5 s de tolerancia por si el cron se corre un poco.
+      const tocaRepetir = !primerAviso && a.repetir > 0 && avisosHoy < MAX_AVISOS_POR_DIA &&
+        ahora.getTime() - (a.ultimoAvisoMs || 0) >= a.repetir * 60 * 1000 - 5000;
+      if (!pendiente || !(primerAviso || tocaRepetir)) continue;
+
+      const status = await enviarPush(env.DATOS, env.CONTACTO, s.suscripcion, {
+        titulo: avisosHoy ? `${a.nombre} · aviso ${avisosHoy + 1}` : a.nombre,
+        cuerpo: a.mensaje || `Es hora de: ${a.nombre}`,
+        fecha,
+        accion: a.id,
+      });
+      cambios = true;
+      // 404/410: el celular canceló la suscripción, se borra entera.
+      if (status === 404 || status === 410) {
+        vencida = true;
+        break;
+      }
+      if (status >= 200 && status < 300) {
+        a.ultimoAviso = fecha;
+        a.avisosHoy = avisosHoy + 1;
+        a.ultimoAvisoMs = ahora.getTime();
+      }
     }
-    const status = await enviarPush(env.DATOS, env.CONTACTO, s.suscripcion, {
-      titulo: avisosHoy ? `Recordatorio diario · aviso ${avisosHoy + 1}` : 'Recordatorio diario',
-      cuerpo: s.mensaje || `Es hora de: ${s.accion}`,
-      fecha,
-    });
-    cambios = true;
-    // 404/410: el celular canceló la suscripción, se borra.
-    if (status === 404 || status === 410) continue;
-    if (status >= 200 && status < 300) {
-      s.ultimoAviso = fecha;
-      s.avisosHoy = avisosHoy + 1;
-      s.ultimoAvisoMs = ahora.getTime();
-    }
-    vigentes.push(s);
+    if (!vencida) vigentes.push(s);
   }
   if (cambios) await guardarSuscripciones(env.DATOS, vigentes);
 }
@@ -145,21 +168,69 @@ export function horaLocal(fecha, zona) {
   };
 }
 
+// La app de antes mandaba una sola acción diaria; se convierte a la lista nueva.
+function accionesRecibidas(d) {
+  if (Array.isArray(d.acciones)) return d.acciones;
+  return [{
+    id: 'principal',
+    nombre: d.accion,
+    mensaje: d.mensaje,
+    hora: d.hora,
+    repetir: d.repetir,
+    frecuencia: { tipo: 'diaria' },
+    hechos: d.ultimoHecho ? [d.ultimoHecho] : [],
+  }];
+}
+
+function recortarHechos(hechos) {
+  return [...new Set(hechos)].sort().slice(-MAX_HECHOS);
+}
+
 function validar(d) {
   const s = d && d.suscripcion;
   if (!s || typeof s.endpoint !== 'string' || !s.endpoint.startsWith('https://')) return 'Suscripción inválida';
   if (!s.keys || typeof s.keys.p256dh !== 'string' || typeof s.keys.auth !== 'string') return 'Suscripción inválida';
-  if (typeof d.accion !== 'string' || !d.accion.trim()) return 'Falta la acción';
-  if (typeof d.hora !== 'string' || !/^([01]\d|2[0-3]):[0-5]\d$/.test(d.hora)) return 'Hora inválida';
   try { horaLocal(new Date(), d.zona); } catch { return 'Zona horaria inválida'; }
-  if (d.ultimoHecho != null && !/^\d{4}-\d{2}-\d{2}$/.test(d.ultimoHecho)) return 'Fecha inválida';
-  if (d.mensaje != null && typeof d.mensaje !== 'string') return 'Mensaje inválido';
-  if (d.repetir != null && !REPETICIONES.includes(d.repetir)) return 'Repetición inválida';
+  if (!Array.isArray(d.acciones)) {
+    if (typeof d.accion !== 'string') return 'Faltan las acciones';
+    if (d.ultimoHecho != null && !FECHA.test(d.ultimoHecho)) return 'Fecha inválida';
+  }
+  const acciones = accionesRecibidas(d);
+  if (acciones.length > MAX_ACCIONES) return 'Demasiadas acciones';
+  const ids = new Set();
+  for (const a of acciones) {
+    if (!a || typeof a.id !== 'string' || !/^[a-z0-9-]{1,40}$/i.test(a.id) || ids.has(a.id)) return 'Acción inválida';
+    ids.add(a.id);
+    if (typeof a.nombre !== 'string' || !a.nombre.trim()) return 'Falta el nombre de la acción';
+    if (typeof a.hora !== 'string' || !/^([01]\d|2[0-3]):[0-5]\d$/.test(a.hora)) return 'Hora inválida';
+    if (a.mensaje != null && typeof a.mensaje !== 'string') return 'Mensaje inválido';
+    if (a.repetir != null && !REPETICIONES.includes(a.repetir)) return 'Repetición inválida';
+    const errorFrecuencia = validarFrecuencia(a.frecuencia);
+    if (errorFrecuencia) return errorFrecuencia;
+    if (!Array.isArray(a.hechos) || a.hechos.length > 400 || !a.hechos.every((f) => FECHA.test(f))) return 'Días hechos inválidos';
+  }
   return null;
 }
 
+// Las suscripciones guardadas antes de tener varias acciones se convierten al leerlas.
 async function leerSuscripciones(kv) {
-  return (await kv.get('suscripciones', 'json')) || [];
+  const lista = (await kv.get('suscripciones', 'json')) || [];
+  return lista.map((s) => (s.acciones ? s : {
+    suscripcion: s.suscripcion,
+    zona: s.zona,
+    acciones: [{
+      id: 'principal',
+      nombre: s.accion,
+      mensaje: s.mensaje || '',
+      hora: s.hora,
+      repetir: s.repetir || 0,
+      frecuencia: { tipo: 'diaria' },
+      hechos: s.ultimoHecho ? [s.ultimoHecho] : [],
+      ultimoAviso: s.ultimoAviso || null,
+      avisosHoy: s.avisosHoy || 0,
+      ultimoAvisoMs: s.ultimoAvisoMs || 0,
+    }],
+  }));
 }
 
 async function guardarSuscripciones(kv, lista) {
